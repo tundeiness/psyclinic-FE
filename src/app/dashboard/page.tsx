@@ -55,12 +55,9 @@ export default function DashboardPage() {
 
   return (
     <main className="mx-auto max-w-3xl px-5 py-10">
-      <h1 className="mb-1 text-xl font-semibold text-brand-700 sm:text-2xl">
+      <h1 className="mb-4 text-xl font-semibold text-brand-700 sm:text-2xl">
         {view.title}
       </h1>
-      <p className="mb-6 text-sm capitalize text-slate-500">
-        Signed in as {user.role}
-      </p>
       <Card>
         <h2 className="text-base font-medium text-slate-800">
           Your workspace
