@@ -71,9 +71,23 @@ export function Header() {
 
     // admin
     return (
-      <Link href="/dashboard" className="text-slate-600 hover:text-brand-700">
-        Dashboard
-      </Link>
+      <>
+        <Link href="/admin" className="text-slate-600 hover:text-brand-700">
+          Dashboard
+        </Link>
+        <Link
+          href="/admin/clients"
+          className="text-slate-600 hover:text-brand-700"
+        >
+          Clients
+        </Link>
+        <Link
+          href="/admin/therapists"
+          className="text-slate-600 hover:text-brand-700"
+        >
+          Therapists
+        </Link>
+      </>
     );
   }
 

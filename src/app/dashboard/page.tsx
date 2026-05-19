@@ -95,11 +95,21 @@ export default function DashboardPage() {
             </a>
           </div>
         ) : (
-          <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-slate-600">
-            {view.items.map((i) => (
-              <li key={i}>{i}</li>
-            ))}
-          </ul>
+          <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+            <a href="/admin">
+              <Button className="!w-auto">Open dashboard</Button>
+            </a>
+            <a href="/admin/clients">
+              <Button variant="ghost" className="!w-auto">
+                Clients
+              </Button>
+            </a>
+            <a href="/admin/therapists">
+              <Button variant="ghost" className="!w-auto">
+                Therapists
+              </Button>
+            </a>
+          </div>
         )}
       </Card>
     </main>
