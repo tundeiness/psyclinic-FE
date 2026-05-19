@@ -1,4 +1,8 @@
-import authReducer, { logout, clearAuthError } from "@/store/authSlice";
+import authReducer, {
+  logout,
+  clearAuthError,
+  markInitialized,
+} from "@/store/authSlice";
 
 type State = ReturnType<typeof authReducer>;
 
@@ -32,5 +36,12 @@ describe("authSlice reducer", () => {
     const init = authReducer(undefined, { type: "@@INIT" });
     expect(init.user).toBeNull();
     expect(init.initialized).toBe(false);
+  });
+
+  it("markInitialized flips initialized without touching user", () => {
+    const init = authReducer(undefined, { type: "@@INIT" });
+    const next = authReducer(init, markInitialized());
+    expect(next.initialized).toBe(true);
+    expect(next.user).toBeNull();
   });
 });

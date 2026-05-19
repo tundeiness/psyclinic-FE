@@ -2,12 +2,23 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useAppSelector } from "@/store";
 import { Card, Button } from "@/components/ui";
 
 type ApiStatus = "checking" | "online" | "offline";
 
 export default function HomePage() {
+  const router = useRouter();
+  const { user, initialized } = useAppSelector((s) => s.auth);
   const [status, setStatus] = useState<ApiStatus>("checking");
+
+  // The root URL is the PUBLIC marketing page. A signed-in user should
+  // never see it (no "create an account" / "browse therapists" once
+  // authenticated) — send them to their role-aware dashboard.
+  useEffect(() => {
+    if (initialized && user) router.replace("/dashboard");
+  }, [initialized, user, router]);
 
   useEffect(() => {
     const base =
@@ -16,6 +27,16 @@ export default function HomePage() {
       .then((r) => setStatus(r.ok ? "online" : "offline"))
       .catch(() => setStatus("offline"));
   }, []);
+
+  // While auth state is resolving, or if a logged-in user is mid-
+  // redirect, don't flash the public marketing content.
+  if (!initialized || user) {
+    return (
+      <main className="mx-auto max-w-3xl px-5 py-10">
+        <p className="text-sm text-slate-500">Loading…</p>
+      </main>
+    );
+  }
 
   return (
     <main className="mx-auto max-w-3xl px-5 py-10">

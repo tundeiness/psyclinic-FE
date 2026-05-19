@@ -20,7 +20,7 @@ export default function LoginPage() {
   }, [dispatch]);
 
   useEffect(() => {
-    if (user) router.push("/");
+    if (user) router.push("/dashboard");
   }, [user, router]);
 
   async function onSubmit(e: React.FormEvent) {

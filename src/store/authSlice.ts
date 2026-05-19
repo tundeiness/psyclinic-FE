@@ -78,6 +78,11 @@ const authSlice = createSlice({
     clearAuthError(state) {
       state.error = null;
     },
+    markInitialized(state) {
+      // Auth bootstrap completed with nothing to restore (no stored
+      // token). Lets the UI stop waiting and render public content.
+      state.initialized = true;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -109,6 +114,6 @@ const authSlice = createSlice({
   },
 });
 
-export const { logout, clearAuthError } = authSlice.actions;
+export const { logout, clearAuthError, markInitialized } = authSlice.actions;
 export const hasStoredToken = () => Boolean(getToken());
 export default authSlice.reducer;

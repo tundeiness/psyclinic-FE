@@ -6,7 +6,7 @@
 #
 # Open http://localhost:3001
 services:
-  frontend:
+  psyclinic-fe:
     build:
       context: .
       target: deps
@@ -15,8 +15,6 @@ services:
     ports:
       - "3001:3001"
     environment:
-      # The browser calls the API directly, so this stays localhost:3000
-      # (the backend's published port on the host).
       NEXT_PUBLIC_API_BASE_URL: "http://localhost:3000"
       NEXT_TELEMETRY_DISABLED: "1"
     volumes:
