@@ -56,11 +56,11 @@ export function Header() {
     if (user.role === "therapist") {
       return (
         <>
-          <Link href="/dashboard" className="text-slate-600 hover:text-brand-700">
+          <Link href="/therapist" className="text-slate-600 hover:text-brand-700">
             My schedule
           </Link>
           <Link
-            href="/dashboard"
+            href="/therapist/clients"
             className="text-slate-600 hover:text-brand-700"
           >
             My clients

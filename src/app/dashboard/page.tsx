@@ -83,6 +83,17 @@ export default function DashboardPage() {
               </Button>
             </a>
           </div>
+        ) : user.role === "therapist" ? (
+          <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+            <a href="/therapist">
+              <Button className="!w-auto">My schedule</Button>
+            </a>
+            <a href="/therapist/clients">
+              <Button variant="ghost" className="!w-auto">
+                My clients
+              </Button>
+            </a>
+          </div>
         ) : (
           <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-slate-600">
             {view.items.map((i) => (
