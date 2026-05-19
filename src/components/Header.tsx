@@ -1,0 +1,53 @@
+"use client";
+
+import Link from "next/link";
+import { useAppDispatch, useAppSelector } from "@/store";
+import { logout } from "@/store/authSlice";
+
+export function Header() {
+  const dispatch = useAppDispatch();
+  const user = useAppSelector((s) => s.auth.user);
+
+  return (
+    <header className="sticky top-0 z-10 border-b border-brand-100 bg-white/90 backdrop-blur">
+      <div className="mx-auto flex max-w-3xl items-center justify-between px-4 py-3">
+        <Link href="/" className="text-lg font-semibold text-brand-700">
+          PsyClinic
+        </Link>
+        <nav className="flex items-center gap-3 text-sm">
+          <Link href="/therapists" className="text-slate-600 hover:text-brand-700">
+            Therapists
+          </Link>
+          {user ? (
+            <>
+              <span className="hidden text-slate-500 sm:inline">
+                {user.full_name}
+              </span>
+              <button
+                onClick={() => dispatch(logout())}
+                className="rounded-lg bg-brand-50 px-3 py-1.5 text-brand-700 hover:bg-brand-100"
+              >
+                Log out
+              </button>
+            </>
+          ) : (
+            <>
+              <Link
+                href="/login"
+                className="text-slate-600 hover:text-brand-700"
+              >
+                Log in
+              </Link>
+              <Link
+                href="/signup"
+                className="rounded-lg bg-brand-600 px-3 py-1.5 text-white hover:bg-brand-700"
+              >
+                Sign up
+              </Link>
+            </>
+          )}
+        </nav>
+      </div>
+    </header>
+  );
+}

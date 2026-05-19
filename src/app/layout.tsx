@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { Providers } from "./providers";
+import { Header } from "@/components/Header";
+import { AuthBootstrap } from "@/components/AuthBootstrap";
 
 export const metadata: Metadata = {
   title: "PsyClinic",
@@ -23,7 +25,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="min-h-screen bg-brand-50 text-slate-800 antialiased">
-        <Providers>{children}</Providers>
+        <Providers>
+          <AuthBootstrap />
+          <Header />
+          {children}
+        </Providers>
       </body>
     </html>
   );
