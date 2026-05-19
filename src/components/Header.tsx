@@ -34,14 +34,20 @@ export function Header() {
     if (user.role === "client") {
       return (
         <>
-          <Link href="/therapists" className="text-slate-600 hover:text-brand-700">
-            Find a therapist
+          <Link href="/book" className="text-slate-600 hover:text-brand-700">
+            Book
           </Link>
           <Link
-            href="/dashboard"
+            href="/appointments"
             className="text-slate-600 hover:text-brand-700"
           >
-            My appointments
+            Appointments
+          </Link>
+          <Link
+            href="/profile"
+            className="text-slate-600 hover:text-brand-700"
+          >
+            Profile
           </Link>
         </>
       );

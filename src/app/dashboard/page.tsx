@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAppSelector } from "@/store";
-import { Card } from "@/components/ui";
+import { Card, Button } from "@/components/ui";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -25,8 +25,8 @@ export default function DashboardPage() {
     client: {
       title: `Welcome, ${user.full_name}`,
       items: [
-        "Browse therapists and view their availability calendar",
-        "Book a session and pay securely",
+        "Browse availability and book a session",
+        "Pay securely to confirm your appointment",
         "See and manage your appointments",
         "Upload your avatar and documents",
       ],
@@ -63,13 +63,33 @@ export default function DashboardPage() {
           Your workspace
         </h2>
         <p className="mt-1 text-sm text-slate-600">
-          The following is being built and delivered in upcoming slices:
+          {user.role === "client"
+            ? "Jump straight in:"
+            : "The following is being built and delivered in upcoming slices:"}
         </p>
-        <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-slate-600">
-          {view.items.map((i) => (
-            <li key={i}>{i}</li>
-          ))}
-        </ul>
+        {user.role === "client" ? (
+          <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+            <a href="/book">
+              <Button className="!w-auto">Book a session</Button>
+            </a>
+            <a href="/appointments">
+              <Button variant="ghost" className="!w-auto">
+                My appointments
+              </Button>
+            </a>
+            <a href="/profile">
+              <Button variant="ghost" className="!w-auto">
+                Profile
+              </Button>
+            </a>
+          </div>
+        ) : (
+          <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-slate-600">
+            {view.items.map((i) => (
+              <li key={i}>{i}</li>
+            ))}
+          </ul>
+        )}
       </Card>
     </main>
   );
