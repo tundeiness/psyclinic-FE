@@ -1,0 +1,17 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body {
+  padding: 0;
+  margin: 0;
+  -webkit-text-size-adjust: 100%;
+}
+
+/* Respect iOS safe areas (notch / home indicator) so the app looks
+   right on modern iPhones. */
+body {
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+}

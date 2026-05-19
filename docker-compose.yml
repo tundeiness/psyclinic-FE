@@ -1,0 +1,25 @@
+# Local development for the frontend. Run the backend separately
+# (its own docker compose on :3000); this serves the Next.js dev
+# server on :3001 with hot reload.
+#
+#   docker compose up
+#
+# Open http://localhost:3001
+services:
+  frontend:
+    build:
+      context: .
+      target: deps
+    command: sh -c "npm run dev"
+    working_dir: /app
+    ports:
+      - "3001:3001"
+    environment:
+      # The browser calls the API directly, so this stays localhost:3000
+      # (the backend's published port on the host).
+      NEXT_PUBLIC_API_BASE_URL: "http://localhost:3000"
+      NEXT_TELEMETRY_DISABLED: "1"
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.next
