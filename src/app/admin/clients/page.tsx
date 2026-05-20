@@ -54,7 +54,7 @@ export default function AdminClientsPage() {
   }
 
   return (
-    <main className="mx-auto max-w-3xl px-5 py-8">
+    <main className="mx-auto max-w-6xl px-5 py-8">
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-xl font-semibold text-brand-700 sm:text-2xl">
           Clients

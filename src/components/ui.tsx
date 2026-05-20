@@ -11,11 +11,11 @@ export function Button({
   variant?: "primary" | "ghost";
 }) {
   const base =
-    "inline-flex w-full items-center justify-center rounded-xl px-4 py-3 text-sm font-medium transition active:scale-[0.99] disabled:opacity-60 sm:w-auto";
+    "inline-flex w-full items-center justify-center rounded-2xl px-4 py-3 text-sm font-medium transition active:scale-[0.99] disabled:opacity-60 sm:w-auto";
   const styles =
     variant === "primary"
-      ? "bg-brand-600 text-white hover:bg-brand-700"
-      : "bg-white text-brand-700 ring-1 ring-brand-100 hover:bg-brand-50";
+      ? "bg-gradient-to-br from-brand-600 to-brand-700 text-white shadow-soft hover:from-brand-700 hover:to-brand-700"
+      : "bg-white text-brand-700 ring-1 ring-slate-200 hover:bg-slate-50";
   return (
     <button
       className={`${base} ${styles} ${className}`}
@@ -44,7 +44,7 @@ export function Field({
       </label>
       <input
         id={id}
-        className="w-full rounded-xl border border-slate-200 bg-white px-3 py-3 text-base outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
+        className="w-full rounded-2xl border border-slate-200 bg-white/70 px-3 py-3 text-base outline-none transition focus:border-brand-500 focus:bg-white focus:ring-4 focus:ring-brand-100"
         {...props}
       />
       {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
@@ -52,6 +52,7 @@ export function Field({
   );
 }
 
+// Standard Card — large radius, soft shadow, subtle background tint.
 export function Card({
   children,
   className = "",
@@ -60,7 +61,9 @@ export function Card({
   className?: string;
 }) {
   return (
-    <div className={`rounded-2xl bg-white p-6 shadow-sm ${className}`}>
+    <div
+      className={`rounded-3xl bg-white p-6 shadow-soft ring-1 ring-slate-100 ${className}`}
+    >
       {children}
     </div>
   );
@@ -79,20 +82,13 @@ export function Alert({
     info: "bg-amber-50 text-amber-800 ring-amber-100",
   }[kind];
   return (
-    <div className={`mb-4 rounded-xl px-4 py-3 text-sm ring-1 ${styles}`}>
+    <div className={`mb-4 rounded-2xl px-4 py-3 text-sm ring-1 ${styles}`}>
       {children}
     </div>
   );
 }
 
-// Unified loading indicator. Use anywhere a page is fetching its primary
-// data. Renders a faint spinner-style pulse + message so loading is
-// consistently identifiable across the app.
-export function LoadingState({
-  label = "Loading…",
-}: {
-  label?: string;
-}) {
+export function LoadingState({ label = "Loading…" }: { label?: string }) {
   return (
     <div
       role="status"
@@ -108,8 +104,6 @@ export function LoadingState({
   );
 }
 
-// Unified empty state. Use when a fetch succeeded but returned no items.
-// Always shorter than an Alert, visually distinct from a loading state.
 export function EmptyState({
   title,
   hint,
@@ -120,10 +114,91 @@ export function EmptyState({
   action?: React.ReactNode;
 }) {
   return (
-    <div className="rounded-2xl border border-dashed border-slate-200 bg-white px-5 py-8 text-center">
+    <div className="rounded-3xl border border-dashed border-slate-200 bg-white/60 px-5 py-10 text-center">
       <p className="text-sm font-medium text-slate-700">{title}</p>
       {hint && <p className="mt-1 text-xs text-slate-500">{hint}</p>}
       {action && <div className="mt-4 flex justify-center">{action}</div>}
     </div>
   );
 }
+
+// Horizon-style gradient stat card. Used on dashboards.
+//
+// `tone` selects the accent pair. Icon is a small inline SVG component
+// or emoji — kept as ReactNode so callers can pass anything.
+type StatTone = "indigo" | "violet" | "cyan" | "amber" | "brand";
+
+const STAT_TONES: Record<StatTone, { from: string; to: string; chip: string }> = {
+  indigo: { from: "from-accent-indigo-50",  to: "to-white", chip: "bg-accent-indigo-500/10 text-accent-indigo-600" },
+  violet: { from: "from-accent-violet-50",  to: "to-white", chip: "bg-accent-violet-500/10 text-accent-violet-600" },
+  cyan:   { from: "from-accent-cyan-50",    to: "to-white", chip: "bg-accent-cyan-500/10 text-accent-cyan-600" },
+  amber:  { from: "from-accent-amber-50",   to: "to-white", chip: "bg-accent-amber-500/10 text-accent-amber-600" },
+  brand:  { from: "from-brand-50",          to: "to-white", chip: "bg-brand-500/10 text-brand-700" },
+};
+
+export function StatCard({
+  label,
+  value,
+  hint,
+  icon,
+  tone = "brand",
+}: {
+  label: string;
+  value: string | number;
+  hint?: string;
+  icon?: React.ReactNode;
+  tone?: StatTone;
+}) {
+  const t = STAT_TONES[tone];
+  return (
+    <div
+      className={`flex items-start justify-between gap-3 rounded-3xl bg-gradient-to-br ${t.from} ${t.to} p-5 shadow-soft ring-1 ring-slate-100`}
+    >
+      <div>
+        <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
+          {label}
+        </p>
+        <p className="mt-1 text-2xl font-semibold text-slate-800">{value}</p>
+        {hint && <p className="mt-1 text-xs text-slate-500">{hint}</p>}
+      </div>
+      {icon && (
+        <span
+          className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl ${t.chip}`}
+        >
+          {icon}
+        </span>
+      )}
+    </div>
+  );
+}
+
+// Compact icons used by StatCards.
+export const Icons = {
+  users: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M17 20v-2a4 4 0 00-3-3.87M9 20v-2a4 4 0 013-3.87M12 12a4 4 0 100-8 4 4 0 000 8z" />
+    </svg>
+  ),
+  briefcase: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
+      <rect x="3" y="7" width="18" height="13" rx="2" />
+      <path strokeLinecap="round" d="M8 7V5a2 2 0 012-2h4a2 2 0 012 2v2" />
+    </svg>
+  ),
+  inbox: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M3 13l3-9h12l3 9M3 13v6a2 2 0 002 2h14a2 2 0 002-2v-6M3 13h5l2 3h4l2-3h5" />
+    </svg>
+  ),
+  calendar: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
+      <rect x="3" y="5" width="18" height="16" rx="2" />
+      <path strokeLinecap="round" d="M3 9h18M8 3v4M16 3v4" />
+    </svg>
+  ),
+  dollar: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v18M17 7H9.5a2.5 2.5 0 000 5h5a2.5 2.5 0 010 5H7" />
+    </svg>
+  ),
+};

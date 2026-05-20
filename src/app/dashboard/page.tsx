@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useAppSelector } from "@/store";
 import { Card, Button } from "@/components/ui";
 
@@ -21,97 +22,174 @@ export default function DashboardPage() {
     );
   }
 
-  const byRole: Record<string, { title: string; items: string[] }> = {
+  // Role-aware welcome heading + action set.
+  const isCoAdmin = user.role === "therapist" && user.therapist_profile?.co_admin === true;
+  const banner = {
     client: {
-      title: `Welcome, ${user.full_name}`,
-      items: [
-        "Browse availability and book a session",
-        "Pay securely to confirm your appointment",
-        "See and manage your appointments",
-        "Upload your avatar and documents",
-      ],
+      tag: "Client",
+      greeting: `Welcome, ${user.full_name.split(" ")[0]}`,
+      tagline: "Book a session, manage your appointments, and update your profile.",
     },
     therapist: {
-      title: `Welcome, ${user.full_name}`,
-      items: [
-        "Your schedule and upcoming appointment dates",
-        "Clients who booked you — view their profile",
-        "Write private clinical notes on a selected client",
-        "Notifications and messages from the admin",
-      ],
+      tag: isCoAdmin ? "Therapist · Co-admin" : "Therapist",
+      greeting: `Welcome, ${user.full_name.split(" ")[0]}`,
+      tagline: isCoAdmin
+        ? "Your schedule, your clients, and admin tools the admin granted you."
+        : "Manage your schedule, your clients and clinical notes.",
     },
     admin: {
-      title: `Welcome, ${user.full_name}`,
-      items: [
-        "Pending applications — approve or reject",
-        "Clients and therapists — manage and remove",
-        "Payment inflows and the practice calendar",
-        "Notifications about new applications",
-      ],
+      tag: "Admin",
+      greeting: `Welcome back, ${user.full_name.split(" ")[0]}`,
+      tagline: "Oversee the practice — applications, users and payment inflows.",
     },
-  };
-
-  const view = byRole[user.role];
+  }[user.role];
 
   return (
-    <main className="mx-auto max-w-3xl px-5 py-10">
-      <h1 className="mb-4 text-xl font-semibold text-brand-700 sm:text-2xl">
-        {view.title}
-      </h1>
-      <Card>
-        <h2 className="text-base font-medium text-slate-800">
-          Your workspace
-        </h2>
-        <p className="mt-1 text-sm text-slate-600">
-          {user.role === "client"
-            ? "Jump straight in:"
-            : "The following is being built and delivered in upcoming slices:"}
+    <main className="mx-auto max-w-6xl px-5 py-8">
+      <div className="mb-6 overflow-hidden rounded-3xl bg-gradient-to-br from-brand-600 via-brand-700 to-slate-800 p-6 text-white shadow-soft sm:p-8">
+        <p className="text-xs font-medium uppercase tracking-wider text-white/70">
+          {banner.tag}
         </p>
-        {user.role === "client" ? (
-          <div className="mt-3 flex flex-col gap-2 sm:flex-row">
-            <a href="/book">
-              <Button className="!w-auto">Book a session</Button>
-            </a>
-            <a href="/appointments">
+        <h1 className="mt-1 text-2xl font-semibold sm:text-3xl">
+          {banner.greeting}
+        </h1>
+        <p className="mt-1 max-w-xl text-sm text-white/80">{banner.tagline}</p>
+      </div>
+
+      {user.role === "client" && (
+        <div className="grid gap-4 sm:grid-cols-3">
+          <Card>
+            <p className="text-xs font-medium uppercase tracking-wide text-accent-indigo-600">
+              Book a session
+            </p>
+            <p className="mt-2 text-sm text-slate-600">
+              Pick a date and a therapist. Your first session is free.
+            </p>
+            <Link href="/book" className="mt-4 inline-block">
+              <Button className="!w-auto">Go to booking</Button>
+            </Link>
+          </Card>
+          <Card>
+            <p className="text-xs font-medium uppercase tracking-wide text-accent-violet-600">
+              My appointments
+            </p>
+            <p className="mt-2 text-sm text-slate-600">
+              See or cancel upcoming sessions.
+            </p>
+            <Link href="/appointments" className="mt-4 inline-block">
               <Button variant="ghost" className="!w-auto">
-                My appointments
+                Open
               </Button>
-            </a>
-            <a href="/profile">
+            </Link>
+          </Card>
+          <Card>
+            <p className="text-xs font-medium uppercase tracking-wide text-accent-cyan-600">
+              Profile
+            </p>
+            <p className="mt-2 text-sm text-slate-600">
+              Update your avatar and documents.
+            </p>
+            <Link href="/profile" className="mt-4 inline-block">
               <Button variant="ghost" className="!w-auto">
-                Profile
+                Edit profile
               </Button>
-            </a>
-          </div>
-        ) : user.role === "therapist" ? (
-          <div className="mt-3 flex flex-col gap-2 sm:flex-row">
-            <a href="/therapist">
-              <Button className="!w-auto">My schedule</Button>
-            </a>
-            <a href="/therapist/clients">
+            </Link>
+          </Card>
+        </div>
+      )}
+
+      {user.role === "therapist" && (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <Card>
+            <p className="text-xs font-medium uppercase tracking-wide text-accent-indigo-600">
+              My schedule
+            </p>
+            <p className="mt-2 text-sm text-slate-600">
+              Manage availability and see appointments.
+            </p>
+            <Link href="/therapist" className="mt-4 inline-block">
+              <Button className="!w-auto">Open</Button>
+            </Link>
+          </Card>
+          <Card>
+            <p className="text-xs font-medium uppercase tracking-wide text-accent-violet-600">
+              My clients
+            </p>
+            <p className="mt-2 text-sm text-slate-600">
+              View profiles and write private clinical notes.
+            </p>
+            <Link href="/therapist/clients" className="mt-4 inline-block">
               <Button variant="ghost" className="!w-auto">
-                My clients
+                Open
               </Button>
-            </a>
-          </div>
-        ) : (
-          <div className="mt-3 flex flex-col gap-2 sm:flex-row">
-            <a href="/admin">
-              <Button className="!w-auto">Open dashboard</Button>
-            </a>
-            <a href="/admin/clients">
+            </Link>
+          </Card>
+          {isCoAdmin && (
+            <Card className="ring-2 ring-accent-amber-500/30">
+              <p className="text-xs font-medium uppercase tracking-wide text-accent-amber-600">
+                Co-admin tools
+              </p>
+              <p className="mt-2 text-sm text-slate-600">
+                You have admin powers granted by the admin.
+              </p>
+              <Link href="/admin" className="mt-4 inline-block">
+                <Button variant="ghost" className="!w-auto">
+                  Admin workspace
+                </Button>
+              </Link>
+            </Card>
+          )}
+        </div>
+      )}
+
+      {user.role === "admin" && (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <Card>
+            <p className="text-xs font-medium uppercase tracking-wide text-accent-indigo-600">
+              Dashboard
+            </p>
+            <p className="mt-2 text-sm text-slate-600">
+              Counts, inflows, pending applications, calendar.
+            </p>
+            <Link href="/admin" className="mt-4 inline-block">
+              <Button className="!w-auto">Open</Button>
+            </Link>
+          </Card>
+          <Card>
+            <p className="text-xs font-medium uppercase tracking-wide text-accent-violet-600">
+              People
+            </p>
+            <p className="mt-2 text-sm text-slate-600">
+              Manage clients, therapists and co-admins.
+            </p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <Link href="/admin/clients">
+                <Button variant="ghost" className="!w-auto">
+                  Clients
+                </Button>
+              </Link>
+              <Link href="/admin/therapists">
+                <Button variant="ghost" className="!w-auto">
+                  Therapists
+                </Button>
+              </Link>
+            </div>
+          </Card>
+          <Card>
+            <p className="text-xs font-medium uppercase tracking-wide text-accent-cyan-600">
+              Settings
+            </p>
+            <p className="mt-2 text-sm text-slate-600">
+              Practice-wide flat rate.
+            </p>
+            <Link href="/admin/settings" className="mt-4 inline-block">
               <Button variant="ghost" className="!w-auto">
-                Clients
+                Open
               </Button>
-            </a>
-            <a href="/admin/therapists">
-              <Button variant="ghost" className="!w-auto">
-                Therapists
-              </Button>
-            </a>
-          </div>
-        )}
-      </Card>
+            </Link>
+          </Card>
+        </div>
+      )}
     </main>
   );
 }

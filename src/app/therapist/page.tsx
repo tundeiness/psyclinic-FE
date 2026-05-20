@@ -101,7 +101,7 @@ export default function TherapistSchedulePage() {
   }
 
   return (
-    <main className="mx-auto max-w-3xl px-5 py-8">
+    <main className="mx-auto max-w-6xl px-5 py-8">
       <h1 className="mb-6 text-xl font-semibold text-brand-700 sm:text-2xl">
         My schedule
       </h1>

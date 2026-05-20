@@ -22,13 +22,18 @@ export default function TherapistsPage() {
   }, []);
 
   return (
-    <main className="mx-auto max-w-3xl px-5 py-8">
-      <h1 className="mb-1 text-xl font-semibold text-brand-700 sm:text-2xl">
-        Our therapists
-      </h1>
-      <p className="mb-6 text-sm text-slate-600">
-        Read about each therapist before creating an account to book.
-      </p>
+    <main className="mx-auto max-w-6xl px-5 py-8">
+      <div className="mb-6 rounded-3xl bg-gradient-to-br from-brand-600 via-brand-700 to-slate-800 p-6 text-white shadow-soft sm:p-8">
+        <p className="text-xs font-medium uppercase tracking-wider text-white/70">
+          Therapists
+        </p>
+        <h1 className="mt-1 text-2xl font-semibold sm:text-3xl">
+          Meet our team
+        </h1>
+        <p className="mt-1 max-w-xl text-sm text-white/80">
+          Read about each therapist before creating an account to book.
+        </p>
+      </div>
 
       {error && <Alert kind="error">{error}</Alert>}
 
@@ -42,7 +47,7 @@ export default function TherapistsPage() {
         </Alert>
       )}
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {list?.map((t) => (
           <Card key={t.id}>
             <h2 className="text-base font-semibold text-slate-800">
