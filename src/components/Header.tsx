@@ -18,6 +18,9 @@ export function Header() {
           <Link href="/therapists" className="text-slate-600 hover:text-brand-700">
             Therapists
           </Link>
+          <Link href="/blog" className="text-slate-600 hover:text-brand-700">
+            Blog
+          </Link>
           <Link href="/login" className="text-slate-600 hover:text-brand-700">
             Log in
           </Link>
@@ -43,6 +46,9 @@ export function Header() {
           >
             Appointments
           </Link>
+          <Link href="/blog" className="text-slate-600 hover:text-brand-700">
+            Blog
+          </Link>
           <Link
             href="/profile"
             className="text-slate-600 hover:text-brand-700"
@@ -65,6 +71,16 @@ export function Header() {
             className="text-slate-600 hover:text-brand-700"
           >
             My clients
+          </Link>
+          <Link href="/blog" className="text-slate-600 hover:text-brand-700">
+            Blog
+          </Link>
+          <Link
+            href="/blog/new"
+            className="rounded-lg bg-accent-indigo-50 px-2 py-1 text-xs font-medium text-accent-indigo-600"
+            title="Write a blog post"
+          >
+            Write
           </Link>
           {isCoAdmin && (
             <Link
@@ -96,6 +112,16 @@ export function Header() {
           className="text-slate-600 hover:text-brand-700"
         >
           Therapists
+        </Link>
+        <Link href="/blog" className="text-slate-600 hover:text-brand-700">
+          Blog
+        </Link>
+        <Link
+          href="/blog/new"
+          className="rounded-lg bg-accent-indigo-50 px-2 py-1 text-xs font-medium text-accent-indigo-600"
+          title="Write a blog post"
+        >
+          Write
         </Link>
       </>
     );
