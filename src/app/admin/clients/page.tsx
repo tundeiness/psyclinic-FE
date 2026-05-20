@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { Card, Button, Alert } from "@/components/ui";
+import { Card, Button, Alert, LoadingState } from "@/components/ui";
 import { useRequireRole } from "@/lib/useRequireRole";
 import {
   fetchAdminClients,
@@ -65,7 +65,7 @@ export default function AdminClientsPage() {
       </div>
 
       {error && <Alert kind="error">{error}</Alert>}
-      {!list && <p className="text-sm text-slate-500">Loading…</p>}
+      {!list && <LoadingState label="Loading clients…" />}
       {list && list.length === 0 && (
         <Alert kind="info">No clients registered.</Alert>
       )}

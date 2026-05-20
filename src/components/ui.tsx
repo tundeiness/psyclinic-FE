@@ -84,3 +84,46 @@ export function Alert({
     </div>
   );
 }
+
+// Unified loading indicator. Use anywhere a page is fetching its primary
+// data. Renders a faint spinner-style pulse + message so loading is
+// consistently identifiable across the app.
+export function LoadingState({
+  label = "Loading…",
+}: {
+  label?: string;
+}) {
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      className="flex items-center gap-2 py-6 text-sm text-slate-500"
+    >
+      <span
+        aria-hidden
+        className="inline-block h-2 w-2 animate-pulse rounded-full bg-brand-500"
+      />
+      {label}
+    </div>
+  );
+}
+
+// Unified empty state. Use when a fetch succeeded but returned no items.
+// Always shorter than an Alert, visually distinct from a loading state.
+export function EmptyState({
+  title,
+  hint,
+  action,
+}: {
+  title: string;
+  hint?: string;
+  action?: React.ReactNode;
+}) {
+  return (
+    <div className="rounded-2xl border border-dashed border-slate-200 bg-white px-5 py-8 text-center">
+      <p className="text-sm font-medium text-slate-700">{title}</p>
+      {hint && <p className="mt-1 text-xs text-slate-500">{hint}</p>}
+      {action && <div className="mt-4 flex justify-center">{action}</div>}
+    </div>
+  );
+}

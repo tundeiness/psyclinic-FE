@@ -24,7 +24,7 @@ export function useRequireRole(role: "client" | "therapist" | "admin") {
     if (!user) {
       router.replace("/login");
     } else if (!allowed) {
-      router.replace("/dashboard");
+      router.replace("/forbidden?reason=role");
     }
   }, [initialized, user, allowed, router]);
 

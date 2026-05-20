@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Card, Alert } from "@/components/ui";
+import { Card, Alert, LoadingState } from "@/components/ui";
 import { useRequireRole } from "@/lib/useRequireRole";
 import { fetchMyClients, TherapistClient } from "@/lib/therapistApi";
 import { isApiError } from "@/lib/apiError";
@@ -40,7 +40,7 @@ export default function TherapistClientsPage() {
 
       {error && <Alert kind="error">{error}</Alert>}
 
-      {!clients && <p className="text-sm text-slate-500">Loading…</p>}
+      {!clients && <LoadingState label="Loading clients…" />}
       {clients && clients.length === 0 && (
         <Alert kind="info">
           No clients yet. Clients appear here once they book you.

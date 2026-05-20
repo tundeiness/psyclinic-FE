@@ -110,7 +110,7 @@ export function Header() {
         >
           PsyClinic
         </Link>
-        <nav className="flex items-center gap-3 text-sm">
+        <nav className="flex flex-wrap items-center justify-end gap-x-3 gap-y-2 text-sm">
           {navLinks()}
           {user && (
             <>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Card, Button, Alert } from "@/components/ui";
+import { Card, Button, Alert, LoadingState } from "@/components/ui";
 import { useRequireRole } from "@/lib/useRequireRole";
 import {
   fetchAppointments,
@@ -72,7 +72,7 @@ export default function AppointmentsPage() {
 
       {error && <Alert kind="error">{error}</Alert>}
 
-      {!list && <p className="text-sm text-slate-500">Loading…</p>}
+      {!list && <LoadingState label="Loading appointments…" />}
 
       {list && list.length === 0 && (
         <Alert kind="info">

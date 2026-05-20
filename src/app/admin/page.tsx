@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { Card, Button, Alert } from "@/components/ui";
+import { Card, Button, Alert, LoadingState } from "@/components/ui";
 import { useRequireRole } from "@/lib/useRequireRole";
 import {
   fetchDashboard,
@@ -89,7 +89,7 @@ export default function AdminDashboardPage() {
       </div>
 
       {error && <Alert kind="error">{error}</Alert>}
-      {!data && <p className="text-sm text-slate-500">Loading…</p>}
+      {!data && <LoadingState label="Loading dashboard…" />}
 
       {data && (
         <>
