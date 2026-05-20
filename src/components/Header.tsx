@@ -1,12 +1,19 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/store";
 import { logout } from "@/store/authSlice";
 
 export function Header() {
   const dispatch = useAppDispatch();
   const user = useAppSelector((s) => s.auth.user);
+  const pathname = usePathname();
+
+  // The admin section has its own sidebar + top bar chrome (see
+  // src/app/admin/layout.tsx). Suppress the global header there so we
+  // don't double-stack navigation.
+  if (pathname?.startsWith("/admin")) return null;
 
   // Navigation differs entirely by role. Logged-out visitors see the
   // public marketing surface; authenticated users see only their own
@@ -17,6 +24,9 @@ export function Header() {
         <>
           <Link href="/therapists" className="text-slate-600 hover:text-brand-700">
             Therapists
+          </Link>
+          <Link href="/blog" className="text-slate-600 hover:text-brand-700">
+            Blog
           </Link>
           <Link href="/login" className="text-slate-600 hover:text-brand-700">
             Log in
@@ -43,6 +53,9 @@ export function Header() {
           >
             Appointments
           </Link>
+          <Link href="/blog" className="text-slate-600 hover:text-brand-700">
+            Blog
+          </Link>
           <Link
             href="/profile"
             className="text-slate-600 hover:text-brand-700"
@@ -65,6 +78,16 @@ export function Header() {
             className="text-slate-600 hover:text-brand-700"
           >
             My clients
+          </Link>
+          <Link href="/blog" className="text-slate-600 hover:text-brand-700">
+            Blog
+          </Link>
+          <Link
+            href="/blog/new"
+            className="rounded-lg bg-accent-indigo-50 px-2 py-1 text-xs font-medium text-accent-indigo-600"
+            title="Write a blog post"
+          >
+            Write
           </Link>
           {isCoAdmin && (
             <Link
@@ -96,6 +119,16 @@ export function Header() {
           className="text-slate-600 hover:text-brand-700"
         >
           Therapists
+        </Link>
+        <Link href="/blog" className="text-slate-600 hover:text-brand-700">
+          Blog
+        </Link>
+        <Link
+          href="/blog/new"
+          className="rounded-lg bg-accent-indigo-50 px-2 py-1 text-xs font-medium text-accent-indigo-600"
+          title="Write a blog post"
+        >
+          Write
         </Link>
       </>
     );

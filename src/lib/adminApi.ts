@@ -15,6 +15,8 @@ export interface DashboardData {
     therapists: number;
     pending_applications: number;
     appointments_upcoming: number;
+    blog_posts: number;
+    blog_posts_published: number;
   };
   payment_inflows: {
     total_cents: number;
@@ -44,6 +46,26 @@ export interface DashboardData {
       starts_at: string;
       status: string;
     }[];
+  };
+  bookings_by_day: { date: string; count: number }[];
+  status_breakdown: Record<string, number>;
+  top_therapists: { id: number; full_name: string; session_count: number }[];
+  recent_bookings: {
+    id: number;
+    client: string;
+    therapist: string;
+    starts_at: string;
+    status: string;
+    created_at: string;
+  }[];
+  practice_metrics: {
+    bookings_this_month: number;
+    avg_sessions_per_active_therapist: number;
+    top_blog_author: {
+      id: number;
+      full_name: string;
+      post_count: number;
+    } | null;
   };
 }
 
