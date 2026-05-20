@@ -18,6 +18,7 @@ export default function AdminSettingsPage() {
   const [saved, setSaved] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     setError(null);
@@ -43,9 +44,16 @@ export default function AdminSettingsPage() {
     }
     setBusy(true);
     setError(null);
+    setNotice(null);
     try {
       const s = await updateSettings({ flat_rate_cents: cents });
       setSaved(s.flat_rate_cents);
+      // Reflect the persisted value back into the input so the user
+      // sees a concrete normalized confirmation (e.g. "50" → "50.00").
+      setRateDollars((s.flat_rate_cents / 100).toFixed(2));
+      setNotice(
+        `Flat rate saved: $${(s.flat_rate_cents / 100).toFixed(2)}`
+      );
     } catch (err) {
       setError(isApiError(err) ? err.message : "Could not save settings.");
     } finally {
@@ -73,6 +81,7 @@ export default function AdminSettingsPage() {
       </div>
 
       {error && <Alert kind="error">{error}</Alert>}
+      {notice && <Alert kind="success">{notice}</Alert>}
 
       <Card>
         <h2 className="text-base font-medium text-slate-800">
@@ -107,7 +116,10 @@ export default function AdminSettingsPage() {
             step="0.01"
             value={rateDollars}
             disabled={!isRealAdmin || busy}
-            onChange={(e) => setRateDollars(e.target.value)}
+            onChange={(e) => {
+              setRateDollars(e.target.value);
+              if (notice) setNotice(null);
+            }}
           />
           {isRealAdmin && (
             <Button type="submit" loading={busy}>
