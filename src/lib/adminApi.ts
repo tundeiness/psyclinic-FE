@@ -58,6 +58,7 @@ export interface AdminTherapist {
   bio: string | null;
   license_number: string | null;
   active: boolean;
+  co_admin: boolean;
   specializations: { id: number; name: string }[];
   user: { id: number; full_name: string; email: string };
 }
@@ -98,4 +99,40 @@ export async function fetchAdminTherapists(): Promise<AdminTherapist[]> {
 
 export async function deleteAdminTherapist(id: number): Promise<void> {
   await api.delete(`/admin/therapists/${id}`);
+}
+
+// ---- practice-wide settings (real admin only — co-admins forbidden) ----
+
+export interface Settings {
+  flat_rate_cents: number;
+}
+
+export async function fetchSettings(): Promise<Settings> {
+  const res = await api.get("/admin/settings");
+  return res.data.settings as Settings;
+}
+
+export async function updateSettings(input: Settings): Promise<Settings> {
+  const res = await api.patch("/admin/settings", { settings: input });
+  return res.data.settings as Settings;
+}
+
+// ---- co-admin promotion (real admin only) ----
+
+export async function promoteCoAdmin(
+  therapistProfileId: number
+): Promise<AdminTherapist> {
+  const res = await api.patch(
+    `/admin/therapists/${therapistProfileId}/promote_co_admin`
+  );
+  return res.data.therapist as AdminTherapist;
+}
+
+export async function demoteCoAdmin(
+  therapistProfileId: number
+): Promise<AdminTherapist> {
+  const res = await api.patch(
+    `/admin/therapists/${therapistProfileId}/demote_co_admin`
+  );
+  return res.data.therapist as AdminTherapist;
 }

@@ -2,6 +2,9 @@ import {
   approveApplication,
   rejectApplication,
   fetchDashboard,
+  promoteCoAdmin,
+  demoteCoAdmin,
+  updateSettings,
 } from "@/lib/adminApi";
 import { api } from "@/lib/api";
 
@@ -11,6 +14,39 @@ jest.mock("@/lib/api", () => ({
 
 describe("adminApi", () => {
   afterEach(() => jest.clearAllMocks());
+
+  it("promoteCoAdmin hits the member route", async () => {
+    (api.patch as jest.Mock).mockResolvedValue({
+      data: { therapist: { id: 4, co_admin: true } },
+    });
+    const t = await promoteCoAdmin(4);
+    expect(api.patch).toHaveBeenCalledWith(
+      "/admin/therapists/4/promote_co_admin"
+    );
+    expect(t.co_admin).toBe(true);
+  });
+
+  it("demoteCoAdmin hits the member route", async () => {
+    (api.patch as jest.Mock).mockResolvedValue({
+      data: { therapist: { id: 4, co_admin: false } },
+    });
+    const t = await demoteCoAdmin(4);
+    expect(api.patch).toHaveBeenCalledWith(
+      "/admin/therapists/4/demote_co_admin"
+    );
+    expect(t.co_admin).toBe(false);
+  });
+
+  it("updateSettings posts the flat rate in cents", async () => {
+    (api.patch as jest.Mock).mockResolvedValue({
+      data: { settings: { flat_rate_cents: 8000 } },
+    });
+    const s = await updateSettings({ flat_rate_cents: 8000 });
+    expect(api.patch).toHaveBeenCalledWith("/admin/settings", {
+      settings: { flat_rate_cents: 8000 },
+    });
+    expect(s.flat_rate_cents).toBe(8000);
+  });
 
   it("approveApplication patches the approve member route", async () => {
     (api.patch as jest.Mock).mockResolvedValue({ data: {} });

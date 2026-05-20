@@ -54,6 +54,7 @@ export function Header() {
     }
 
     if (user.role === "therapist") {
+      const isCoAdmin = user.therapist_profile?.co_admin === true;
       return (
         <>
           <Link href="/therapist" className="text-slate-600 hover:text-brand-700">
@@ -65,6 +66,15 @@ export function Header() {
           >
             My clients
           </Link>
+          {isCoAdmin && (
+            <Link
+              href="/admin"
+              className="rounded-lg bg-brand-50 px-2 py-1 text-xs font-medium text-brand-700"
+              title="Co-admin access granted by the admin"
+            >
+              Admin
+            </Link>
+          )}
         </>
       );
     }

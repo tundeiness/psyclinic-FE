@@ -8,6 +8,20 @@ export interface User {
   full_name: string;
   role: "client" | "therapist" | "admin";
   status: "pending" | "approved" | "rejected";
+  // Only present when role === "therapist". A therapist flagged
+  // co_admin is granted admin-like powers by the admin.
+  therapist_profile?: {
+    id: number;
+    co_admin: boolean;
+  };
+}
+
+// True if the user can see/use the admin workspace. Admins always can.
+// Therapists can ONLY if they're flagged co_admin.
+export function hasAdminAccess(user: User | null): boolean {
+  if (!user) return false;
+  if (user.role === "admin") return true;
+  return user.role === "therapist" && user.therapist_profile?.co_admin === true;
 }
 
 interface AuthState {

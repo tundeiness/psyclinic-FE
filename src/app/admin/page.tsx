@@ -80,6 +80,11 @@ export default function AdminDashboardPage() {
               Therapists
             </Button>
           </Link>
+          <Link href="/admin/settings">
+            <Button variant="ghost" className="!w-auto">
+              Settings
+            </Button>
+          </Link>
         </div>
       </div>
 

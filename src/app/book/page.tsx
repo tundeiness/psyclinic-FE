@@ -7,6 +7,7 @@ import {
   fetchSlots,
   bookAppointment,
   confirmPayment,
+  fetchAppointments,
   Slot,
   Payment,
 } from "@/lib/clientApi";
@@ -27,6 +28,22 @@ export default function BookPage() {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [stage, setStage] = useState<Stage>({ name: "browsing" });
+  // null = unknown yet; true = first-ever booker; false = has prior.
+  const [firstTime, setFirstTime] = useState<boolean | null>(null);
+
+  // Check if the user already has any non-cancelled appointments. If
+  // not, their next booking is free under the practice's first-session
+  // rule.
+  useEffect(() => {
+    if (!ready) return;
+    fetchAppointments()
+      .then((appts) => {
+        setFirstTime(
+          appts.filter((a) => a.status !== "cancelled").length === 0
+        );
+      })
+      .catch(() => setFirstTime(null));
+  }, [ready]);
 
   const loadSlots = useCallback(async () => {
     setError(null);
@@ -102,6 +119,12 @@ export default function BookPage() {
 
       {stage.name === "browsing" && (
         <>
+          {firstTime === true && (
+            <Alert kind="success">
+              Your first session is on us — this booking will be{" "}
+              <strong>free</strong>.
+            </Alert>
+          )}
           <Card className="mb-5">
             <Field
               id="date"
