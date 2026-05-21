@@ -76,7 +76,7 @@ export default function ClientDetailPage() {
 
   return (
     <main className="mx-auto max-w-3xl px-5 py-8">
-      <a href="/therapist/clients" className="text-sm text-brand-700 underline">
+      <a href="/therapist/clients" className="text-base font-semibold text-brand-700 no-underline hover:text-brand-800">
         ← Back to clients
       </a>
 

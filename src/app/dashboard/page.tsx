@@ -14,7 +14,12 @@ export default function DashboardPage() {
     if (initialized && !user) router.push("/login");
   }, [initialized, user, router]);
 
-  if (!user) {
+  // Auth state lives only on the client (token in localStorage). On the
+  // server, `user` is always null and `initialized` is false. We render
+  // nothing on the server so the client's first render — which may have
+  // a user — doesn't diverge from the SSR output. Without this guard,
+  // hydration mismatches can leave the page painted-but-non-interactive.
+  if (!initialized || !user) {
     return (
       <main className="mx-auto max-w-3xl px-5 py-10">
         <p className="text-sm text-slate-500">Loading…</p>
@@ -24,7 +29,7 @@ export default function DashboardPage() {
 
   // Role-aware welcome heading + action set.
   const isCoAdmin = user.role === "therapist" && user.therapist_profile?.co_admin === true;
-  const banner = {
+  const banners = {
     client: {
       tag: "Client",
       greeting: `Welcome, ${user.full_name.split(" ")[0]}`,
@@ -42,7 +47,15 @@ export default function DashboardPage() {
       greeting: `Welcome back, ${user.full_name.split(" ")[0]}`,
       tagline: "Oversee the practice — applications, users and payment inflows.",
     },
-  }[user.role];
+  };
+  // Defensive fallback: if the role is unexpected (or undefined), fall
+  // back to a neutral banner rather than crashing mid-render — which
+  // would leave React in an inconsistent state.
+  const banner = banners[user.role as keyof typeof banners] ?? {
+    tag: "Signed in",
+    greeting: `Welcome, ${user.full_name.split(" ")[0]}`,
+    tagline: "",
+  };
 
   return (
     <main className="mx-auto max-w-6xl px-5 py-8">

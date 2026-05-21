@@ -28,7 +28,7 @@ function ForbiddenContent() {
         <p className="mt-2 text-sm text-slate-600">{message}</p>
         <Link
           href="/dashboard"
-          className="mt-4 inline-block text-sm text-brand-700 underline"
+          className="mt-4 inline-block text-base font-semibold text-brand-700 no-underline hover:text-brand-800"
         >
           Back to your dashboard
         </Link>

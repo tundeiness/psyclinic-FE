@@ -23,8 +23,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body className="min-h-screen bg-brand-50 text-slate-800 antialiased">
+    <html lang="en" suppressHydrationWarning>
+      <body
+        className="min-h-screen text-slate-800 antialiased"
+        // Extensions like Grammarly, ColorZilla, and Scribe mutate the
+        // <html> and <body> tags after the SSR HTML lands but before
+        // React hydrates. Without these flags React treats the mismatch
+        // as a hydration crash, and the page becomes
+        // non-interactive (paints, but no clicks/scroll work). These
+        // flags scope the tolerance to the specific elements extensions
+        // are known to touch — not globally.
+        suppressHydrationWarning
+      >
         <Providers>
           <AuthBootstrap />
           <Header />

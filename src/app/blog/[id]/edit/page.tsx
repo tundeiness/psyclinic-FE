@@ -53,7 +53,7 @@ export default function EditBlogPostPage() {
         <h1 className="text-xl font-semibold text-brand-700 sm:text-2xl">
           Edit post
         </h1>
-        <Link href="/blog/mine" className="text-sm text-brand-700 underline">
+        <Link href="/blog/mine" className="text-base font-semibold text-brand-700 no-underline hover:text-brand-800">
           ← My posts
         </Link>
       </div>

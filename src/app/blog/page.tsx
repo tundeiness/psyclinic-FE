@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Card, Alert, Button, LoadingState, EmptyState } from "@/components/ui";
-import { fetchPublicBlogPosts, BlogCard } from "@/lib/blogApi";
+import { fetchPublicBlogPosts, BlogCard, absoluteImageUrl } from "@/lib/blogApi";
 import { isApiError } from "@/lib/apiError";
 import { useAppSelector } from "@/store";
 
@@ -86,19 +86,30 @@ export default function BlogIndexPage() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {posts?.map((p) => (
           <Link key={p.id} href={`/blog/${p.id}`} className="group">
-            <Card className="h-full transition group-hover:ring-2 group-hover:ring-brand-100">
-              <p className="text-xs font-medium uppercase tracking-wide text-accent-indigo-600">
-                {p.author.role === "admin" ? "Admin" : "Therapist"}
-              </p>
-              <h2 className="mt-1 text-lg font-semibold text-slate-800 group-hover:text-brand-700">
-                {p.title}
-              </h2>
-              <p className="mt-2 line-clamp-3 text-sm text-slate-600">
-                {p.excerpt}
-              </p>
-              <div className="mt-4 flex items-center justify-between text-xs text-slate-500">
-                <span>{p.author.full_name}</span>
-                <span>{formatDate(p.published_at)}</span>
+            <Card className="h-full overflow-hidden !p-0 transition group-hover:ring-2 group-hover:ring-brand-100">
+              {p.cover_image_url && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={absoluteImageUrl(p.cover_image_url) ?? ""}
+                  alt=""
+                  className="h-40 w-full object-cover"
+                  loading="lazy"
+                />
+              )}
+              <div className="p-6">
+                <p className="text-xs font-medium uppercase tracking-wide text-accent-indigo-600">
+                  {p.author.role === "admin" ? "Admin" : "Therapist"}
+                </p>
+                <h2 className="mt-1 text-lg font-semibold text-slate-800 group-hover:text-brand-700">
+                  {p.title}
+                </h2>
+                <p className="mt-2 line-clamp-3 text-sm text-slate-600">
+                  {p.excerpt}
+                </p>
+                <div className="mt-4 flex items-center justify-between text-xs text-slate-500">
+                  <span>{p.author.full_name}</span>
+                  <span>{formatDate(p.published_at)}</span>
+                </div>
               </div>
             </Card>
           </Link>

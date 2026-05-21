@@ -3,6 +3,8 @@ import {
   createBlogPost,
   updateBlogPost,
   deleteBlogPost,
+  uploadBlogImage,
+  deleteBlogImage,
 } from "@/lib/blogApi";
 import { api } from "@/lib/api";
 
@@ -61,5 +63,26 @@ describe("blogApi", () => {
     (api.delete as jest.Mock).mockResolvedValue({ data: {} });
     await deleteBlogPost(42);
     expect(api.delete).toHaveBeenCalledWith("/blog_posts/42");
+  });
+
+  it("uploadBlogImage POSTs multipart to the post's images route", async () => {
+    (api.post as jest.Mock).mockResolvedValue({
+      data: {
+        image: { id: 1, alt: "hi", position: 1, url: "/rails/blob/x" },
+      },
+    });
+    const file = new File(["x"], "x.png", { type: "image/png" });
+    const out = await uploadBlogImage(7, file, "hi");
+    expect(api.post).toHaveBeenCalledTimes(1);
+    const [path, formData] = (api.post as jest.Mock).mock.calls[0];
+    expect(path).toBe("/blog_posts/7/images");
+    expect(formData instanceof FormData).toBe(true);
+    expect(out.id).toBe(1);
+  });
+
+  it("deleteBlogImage calls the nested image route", async () => {
+    (api.delete as jest.Mock).mockResolvedValue({ data: {} });
+    await deleteBlogImage(7, 99);
+    expect(api.delete).toHaveBeenCalledWith("/blog_posts/7/images/99");
   });
 });

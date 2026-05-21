@@ -51,7 +51,7 @@ export default function SignupPage() {
             administrator approves your application. We&apos;ve also sent a
             confirmation to your email.
           </Alert>
-          <a href="/" className="text-sm text-brand-700 underline">
+          <a href="/" className="text-base font-semibold text-brand-700 no-underline hover:text-brand-800">
             Back to home
           </a>
         </Card>

@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAppSelector } from "@/store";
 import { Card, Button } from "@/components/ui";
-import { fetchPublicBlogPosts, BlogCard } from "@/lib/blogApi";
+import { fetchPublicBlogPosts, BlogCard, absoluteImageUrl } from "@/lib/blogApi";
 
 type ApiStatus = "checking" | "online" | "offline";
 
@@ -109,7 +109,7 @@ export default function HomePage() {
             </div>
             <Link
               href="/blog"
-              className="text-sm font-medium text-brand-700 underline"
+              className="text-base font-semibold text-brand-700 no-underline hover:text-brand-800"
             >
               All posts →
             </Link>
@@ -118,19 +118,30 @@ export default function HomePage() {
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {latestPosts.map((p) => (
               <Link key={p.id} href={`/blog/${p.id}`} className="group">
-                <Card className="h-full transition group-hover:ring-2 group-hover:ring-brand-100">
-                  <p className="text-xs font-medium uppercase tracking-wide text-accent-indigo-600">
-                    {p.author.role === "admin" ? "Admin" : "Therapist"}
-                  </p>
-                  <h3 className="mt-1 text-base font-semibold text-slate-800 group-hover:text-brand-700">
-                    {p.title}
-                  </h3>
-                  <p className="mt-2 line-clamp-3 text-sm text-slate-600">
-                    {p.excerpt}
-                  </p>
-                  <p className="mt-3 text-xs text-slate-500">
-                    {p.author.full_name}
-                  </p>
+                <Card className="h-full overflow-hidden !p-0 transition group-hover:ring-2 group-hover:ring-brand-100">
+                  {p.cover_image_url && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={absoluteImageUrl(p.cover_image_url) ?? ""}
+                      alt=""
+                      className="h-32 w-full object-cover"
+                      loading="lazy"
+                    />
+                  )}
+                  <div className="p-5">
+                    <p className="text-xs font-medium uppercase tracking-wide text-accent-indigo-600">
+                      {p.author.role === "admin" ? "Admin" : "Therapist"}
+                    </p>
+                    <h3 className="mt-1 text-base font-semibold text-slate-800 group-hover:text-brand-700">
+                      {p.title}
+                    </h3>
+                    <p className="mt-2 line-clamp-3 text-sm text-slate-600">
+                      {p.excerpt}
+                    </p>
+                    <p className="mt-3 text-xs text-slate-500">
+                      {p.author.full_name}
+                    </p>
+                  </div>
                 </Card>
               </Link>
             ))}

@@ -63,6 +63,20 @@ export function Markdown({ source }: { source: string }) {
               {children}
             </pre>
           ),
+          // eslint-disable-next-line @next/next/no-img-element
+          img: ({ src, alt }) => (
+            // Render Markdown-embedded images with safe sizing and a
+            // soft rounded look. Uses a plain <img> rather than
+            // next/image because URLs can come from arbitrary external
+            // hosts that next.config doesn't whitelist.
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={typeof src === "string" ? src : ""}
+              alt={alt ?? ""}
+              className="my-4 max-w-full rounded-2xl"
+              loading="lazy"
+            />
+          ),
         }}
       >
         {source}

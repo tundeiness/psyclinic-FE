@@ -1,5 +1,15 @@
 import { api } from "./api";
 
+// Resolves a relative Active Storage URL (returned by the backend) to
+// an absolute URL the browser can load directly. Pass-through for
+// already-absolute URLs (http/https).
+export function absoluteImageUrl(url: string | null | undefined): string | null {
+  if (!url) return null;
+  if (url.startsWith("http")) return url;
+  const base = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000";
+  return `${base}${url}`;
+}
+
 export interface BlogAuthor {
   id: number;
   full_name: string;
@@ -10,6 +20,7 @@ export interface BlogCard {
   id: number;
   title: string;
   excerpt: string;
+  cover_image_url: string | null;
   author: BlogAuthor;
   published_at: string | null;
 }
@@ -23,6 +34,7 @@ export interface BlogPost {
   published_at: string | null;
   created_at?: string;
   updated_at?: string;
+  images?: BlogImage[];
 }
 
 // ---- public (no auth) ----
@@ -68,4 +80,34 @@ export async function updateBlogPost(
 
 export async function deleteBlogPost(id: number): Promise<void> {
   await api.delete(`/blog_posts/${id}`);
+}
+
+// ---- blog post images ----
+
+export interface BlogImage {
+  id: number;
+  alt: string;
+  position: number;
+  url: string | null;
+}
+
+export async function uploadBlogImage(
+  postId: number,
+  file: File,
+  alt: string = ""
+): Promise<BlogImage> {
+  const form = new FormData();
+  form.append("file", file);
+  form.append("alt", alt);
+  const res = await api.post(`/blog_posts/${postId}/images`, form, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+  return res.data.image as BlogImage;
+}
+
+export async function deleteBlogImage(
+  postId: number,
+  imageId: number
+): Promise<void> {
+  await api.delete(`/blog_posts/${postId}/images/${imageId}`);
 }

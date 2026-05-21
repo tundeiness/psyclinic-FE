@@ -40,7 +40,7 @@ export default function BlogPostPage() {
 
   return (
     <main className="mx-auto max-w-3xl px-5 py-8">
-      <Link href="/blog" className="text-sm text-brand-700 underline">
+      <Link href="/blog" className="text-base font-semibold text-brand-700 no-underline hover:text-brand-800">
         ← All posts
       </Link>
 

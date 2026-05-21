@@ -2,6 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Tell the browser we are a light-mode app. Without this, Chrome's
+   "Auto Dark Mode for Web Contents" feature and some OS-level forced
+   dark modes will invert our palette and break the design. */
+html {
+  color-scheme: light;
+}
+
 html,
 body {
   padding: 0;
