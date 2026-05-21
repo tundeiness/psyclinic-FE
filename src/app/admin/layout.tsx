@@ -216,6 +216,16 @@ export default function AdminLayout({
             </h1>
           </div>
 
+          {/* Always-visible exit out of the admin area. Critical for
+              co-admins (who also work as therapists), and useful for
+              admins who want to view their consumer dashboard. */}
+          <Link
+            href="/dashboard"
+            className="hidden items-center gap-1 rounded-xl bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-200 sm:inline-flex"
+          >
+            ← Back to app
+          </Link>
+
           {user && (
             <UserMenu />
           )}

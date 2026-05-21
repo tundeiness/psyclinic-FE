@@ -75,7 +75,7 @@ export default function AdminSettingsPage() {
         <h1 className="text-xl font-semibold text-brand-700 sm:text-2xl">
           Practice settings
         </h1>
-        <Link href="/admin" className="text-sm text-brand-700 underline">
+        <Link href="/admin" className="text-base font-semibold text-brand-700 no-underline hover:text-brand-800">
           ← Dashboard
         </Link>
       </div>

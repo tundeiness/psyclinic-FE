@@ -150,7 +150,7 @@ export default function AdminDashboardPage() {
           tone="brand"
           label="Blog posts"
           value={data.counts.blog_posts_published}
-          icon={Icons.dollar}
+          icon={Icons.book}
           hint={`${data.counts.blog_posts} total`}
         />
       </div>

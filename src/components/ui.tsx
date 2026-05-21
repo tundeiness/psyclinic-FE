@@ -201,4 +201,10 @@ export const Icons = {
       <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v18M17 7H9.5a2.5 2.5 0 000 5h5a2.5 2.5 0 010 5H7" />
     </svg>
   ),
+  book: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="h-5 w-5">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M4 5a2 2 0 012-2h12v18H6a2 2 0 01-2-2V5z" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M8 7h6M8 11h6M8 15h4" />
+    </svg>
+  ),
 };

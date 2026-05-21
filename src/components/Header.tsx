@@ -104,7 +104,7 @@ export function Header() {
     // admin
     return (
       <>
-        <Link href="/admin" className="text-slate-600 hover:text-brand-700">
+        <Link href="/admin" className="text-base font-semibold text-slate-700 no-underline hover:text-brand-700">
           Dashboard
         </Link>
         <Link
