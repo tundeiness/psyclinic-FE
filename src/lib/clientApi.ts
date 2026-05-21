@@ -92,6 +92,10 @@ export async function uploadAvatar(file: File): Promise<void> {
   });
 }
 
+export async function deleteAvatar(): Promise<void> {
+  await api.delete("/me/avatar");
+}
+
 export async function fetchDocuments(): Promise<AttachmentMeta[]> {
   const res = await api.get("/me/documents");
   return res.data.documents as AttachmentMeta[];

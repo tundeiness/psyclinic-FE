@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/store";
 import { logout } from "@/store/authSlice";
+import { UserMenu } from "@/components/UserMenu";
 
 type NavItem = {
   href: string;
@@ -216,26 +217,7 @@ export default function AdminLayout({
           </div>
 
           {user && (
-            <div className="hidden items-center gap-3 sm:flex">
-              <div className="text-right">
-                <p className="text-xs font-medium text-slate-500">
-                  {user.role === "admin" ? "Admin" : "Co-admin"}
-                </p>
-                <p className="text-sm font-semibold text-slate-800">
-                  {user.full_name}
-                </p>
-              </div>
-              <span
-                aria-hidden
-                className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-500 to-brand-700 text-sm font-semibold text-white shadow-soft"
-              >
-                {user.full_name
-                  .split(" ")
-                  .map((n) => n[0])
-                  .slice(0, 2)
-                  .join("")}
-              </span>
-            </div>
+            <UserMenu />
           )}
         </div>
 

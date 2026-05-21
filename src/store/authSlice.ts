@@ -8,6 +8,12 @@ export interface User {
   full_name: string;
   role: "client" | "therapist" | "admin";
   status: "pending" | "approved" | "rejected";
+  // Avatar from the backend's AttachmentSerializer. Always present in
+  // /me even when unset (url is null in that case).
+  avatar?: {
+    url: string | null;
+    filename?: string;
+  } | null;
   // Only present when role === "therapist". A therapist flagged
   // co_admin is granted admin-like powers by the admin.
   therapist_profile?: {

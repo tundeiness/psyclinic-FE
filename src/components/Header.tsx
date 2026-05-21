@@ -2,11 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useAppDispatch, useAppSelector } from "@/store";
-import { logout } from "@/store/authSlice";
+import { useAppSelector } from "@/store";
+import { UserMenu } from "@/components/UserMenu";
 
 export function Header() {
-  const dispatch = useAppDispatch();
   const user = useAppSelector((s) => s.auth.user);
   const pathname = usePathname();
 
@@ -151,19 +150,7 @@ export function Header() {
         </Link>
         <nav className="flex flex-wrap items-center justify-end gap-x-3 gap-y-2 text-sm">
           {navLinks()}
-          {user && (
-            <>
-              <span className="hidden text-slate-500 sm:inline">
-                {user.full_name}
-              </span>
-              <button
-                onClick={() => dispatch(logout())}
-                className="rounded-xl bg-slate-100 px-3 py-1.5 text-slate-700 transition hover:bg-slate-200"
-              >
-                Log out
-              </button>
-            </>
-          )}
+          {user && <UserMenu />}
         </nav>
       </div>
     </header>
