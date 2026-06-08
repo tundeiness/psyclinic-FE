@@ -127,14 +127,29 @@ export async function deleteAdminTherapist(id: number): Promise<void> {
 
 export interface Settings {
   flat_rate_cents: number;
+  // v2 pricing keys, all in kobo (smallest naira unit).
+  assessment_session_price_cents: number;
+  block_full_price_cents: number;
+  block_installment_first_pct: number;
+  block_installment_second_pct: number;
+  // Computed by the server; read-only on the client side.
+  installment_first_amount_cents: number;
+  installment_second_amount_cents: number;
 }
+
+// Editable subset — computed installment_*_amount_cents are derived
+// server-side and shouldn't be sent in PATCH payloads.
+export type SettingsInput = Partial<Omit<
+  Settings,
+  "installment_first_amount_cents" | "installment_second_amount_cents"
+>>;
 
 export async function fetchSettings(): Promise<Settings> {
   const res = await api.get("/admin/settings");
   return res.data.settings as Settings;
 }
 
-export async function updateSettings(input: Settings): Promise<Settings> {
+export async function updateSettings(input: SettingsInput): Promise<Settings> {
   const res = await api.patch("/admin/settings", { settings: input });
   return res.data.settings as Settings;
 }
