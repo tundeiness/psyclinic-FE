@@ -10,13 +10,6 @@ export interface TherapistClient {
   user: { id: number; full_name: string; email: string };
 }
 
-export interface ClientNote {
-  id: number;
-  body: string;
-  created_at: string;
-  client_profile_id: number;
-}
-
 // ---- availability ----
 
 export async function fetchMySlots(): Promise<Slot[]> {
@@ -67,21 +60,6 @@ export async function fetchClient(id: number): Promise<TherapistClient> {
   return res.data.client as TherapistClient;
 }
 
-// ---- private clinical notes ----
-
-export async function fetchClientNotes(
-  clientId: number
-): Promise<ClientNote[]> {
-  const res = await api.get(`/therapist/clients/${clientId}/notes`);
-  return res.data.notes as ClientNote[];
-}
-
-export async function createClientNote(
-  clientId: number,
-  body: string
-): Promise<ClientNote> {
-  const res = await api.post(`/therapist/clients/${clientId}/notes`, {
-    note: { body },
-  });
-  return res.data.note as ClientNote;
-}
+// (Private clinical notes via the old ClientNote API removed in the
+// EMR redesign — replaced by structured forms under
+// /api/v1/clients/:id/intake_form, etc. See intakeApi.ts.)

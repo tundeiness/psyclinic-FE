@@ -1,5 +1,4 @@
 import {
-  createClientNote,
   createSlot,
   fetchMyClients,
 } from "@/lib/therapistApi";
@@ -11,17 +10,6 @@ jest.mock("@/lib/api", () => ({
 
 describe("therapistApi", () => {
   afterEach(() => jest.clearAllMocks());
-
-  it("createClientNote posts to the nested notes route", async () => {
-    (api.post as jest.Mock).mockResolvedValue({
-      data: { note: { id: 1, body: "hi", created_at: "x", client_profile_id: 2 } },
-    });
-    const n = await createClientNote(2, "hi");
-    expect(api.post).toHaveBeenCalledWith("/therapist/clients/2/notes", {
-      note: { body: "hi" },
-    });
-    expect(n.body).toBe("hi");
-  });
 
   it("createSlot wraps params under availability_slot", async () => {
     (api.post as jest.Mock).mockResolvedValue({

@@ -1,18 +1,12 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
 import { useParams } from "next/navigation";
-import { Card, Button, Alert } from "@/components/ui";
+import { Card, Alert } from "@/components/ui";
 import { useRequireRole } from "@/lib/useRequireRole";
-import {
-  fetchClient,
-  fetchClientNotes,
-  createClientNote,
-  TherapistClient,
-  ClientNote,
-} from "@/lib/therapistApi";
+import { fetchClient, TherapistClient } from "@/lib/therapistApi";
 import { isApiError } from "@/lib/apiError";
-import { formatDateTime } from "@/lib/format";
 
 export default function ClientDetailPage() {
   const { ready } = useRequireRole("therapist");
@@ -20,20 +14,13 @@ export default function ClientDetailPage() {
   const clientId = Number(params.id);
 
   const [client, setClient] = useState<TherapistClient | null>(null);
-  const [notes, setNotes] = useState<ClientNote[] | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [draft, setDraft] = useState("");
-  const [busy, setBusy] = useState(false);
 
   const load = useCallback(async () => {
     setError(null);
     try {
-      const [c, n] = await Promise.all([
-        fetchClient(clientId),
-        fetchClientNotes(clientId),
-      ]);
+      const c = await fetchClient(clientId);
       setClient(c);
-      setNotes(n);
     } catch (e) {
       setError(
         isApiError(e)
@@ -48,23 +35,6 @@ export default function ClientDetailPage() {
   useEffect(() => {
     if (ready && !Number.isNaN(clientId)) load();
   }, [ready, clientId, load]);
-
-  async function onAddNote(e: React.FormEvent) {
-    e.preventDefault();
-    if (!draft.trim()) return;
-    setBusy(true);
-    setError(null);
-    try {
-      await createClientNote(clientId, draft.trim());
-      setDraft("");
-      const n = await fetchClientNotes(clientId);
-      setNotes(n);
-    } catch (err) {
-      setError(isApiError(err) ? err.message : "Could not save note.");
-    } finally {
-      setBusy(false);
-    }
-  }
 
   if (!ready) {
     return (
@@ -102,53 +72,75 @@ export default function ClientDetailPage() {
 
           <Card>
             <h2 className="text-base font-medium text-slate-800">
-              Private clinical notes
+              Clinical records (EMR)
             </h2>
             <p className="mt-1 text-xs text-slate-500">
-              Only you can see these. The client cannot.
+              Structured forms. Only you and admin can view or edit.
             </p>
 
-            <form onSubmit={onAddNote} className="mt-4">
-              <textarea
-                value={draft}
-                onChange={(e) => setDraft(e.target.value)}
-                rows={4}
-                placeholder="Write a note about this session…"
-                className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-100"
-              />
-              <div className="mt-2">
-                <Button
-                  type="submit"
-                  loading={busy}
-                  disabled={!draft.trim()}
-                  className="!w-auto"
-                >
-                  Save note
-                </Button>
-              </div>
-            </form>
-
-            <div className="mt-5 space-y-3">
-              {!notes && (
-                <p className="text-sm text-slate-500">Loading notes…</p>
-              )}
-              {notes && notes.length === 0 && (
-                <p className="text-sm text-slate-500">No notes yet.</p>
-              )}
-              {notes?.map((n) => (
-                <div
-                  key={n.id}
-                  className="rounded-xl bg-brand-50 px-4 py-3 text-sm"
-                >
-                  <p className="whitespace-pre-wrap text-slate-700">
-                    {n.body}
-                  </p>
-                  <p className="mt-1 text-xs text-slate-400">
-                    {formatDateTime(n.created_at)}
+            <ul className="mt-4 divide-y divide-slate-100">
+              <li className="flex items-center justify-between py-3">
+                <div>
+                  <p className="text-sm font-medium text-slate-800">Intake form</p>
+                  <p className="text-xs text-slate-500">
+                    First session — demographics, history, presenting complaint, treatment plan.
                   </p>
                 </div>
-              ))}
-            </div>
+                <Link
+                  href={`/therapist/clients/${clientId}/intake`}
+                  className="rounded-xl bg-brand-50 px-3 py-1.5 text-xs font-semibold text-brand-700 no-underline transition hover:bg-brand-100"
+                >
+                  Open →
+                </Link>
+              </li>
+
+              {/* Phases 3–5 will fill these in; visible as disabled rows
+                  so therapists know what's coming. */}
+              <li className="flex items-center justify-between py-3 opacity-60">
+                <div>
+                  <p className="text-sm font-medium text-slate-800">Session note</p>
+                  <p className="text-xs text-slate-500">
+                    Per session — review, addressed/plan, clinician impression. Coming soon.
+                  </p>
+                </div>
+                <span className="rounded-xl bg-slate-100 px-3 py-1.5 text-xs text-slate-500">
+                  Soon
+                </span>
+              </li>
+              <li className="flex items-center justify-between py-3 opacity-60">
+                <div>
+                  <p className="text-sm font-medium text-slate-800">Service plan note</p>
+                  <p className="text-xs text-slate-500">
+                    Second session — treatment-planning record. Coming soon.
+                  </p>
+                </div>
+                <span className="rounded-xl bg-slate-100 px-3 py-1.5 text-xs text-slate-500">
+                  Soon
+                </span>
+              </li>
+              <li className="flex items-center justify-between py-3 opacity-60">
+                <div>
+                  <p className="text-sm font-medium text-slate-800">DASS-42</p>
+                  <p className="text-xs text-slate-500">
+                    Depression / Anxiety / Stress assessment. Coming soon.
+                  </p>
+                </div>
+                <span className="rounded-xl bg-slate-100 px-3 py-1.5 text-xs text-slate-500">
+                  Soon
+                </span>
+              </li>
+              <li className="flex items-center justify-between py-3 opacity-60">
+                <div>
+                  <p className="text-sm font-medium text-slate-800">Wheel of Life</p>
+                  <p className="text-xs text-slate-500">
+                    9-area life satisfaction assessment. Coming soon.
+                  </p>
+                </div>
+                <span className="rounded-xl bg-slate-100 px-3 py-1.5 text-xs text-slate-500">
+                  Soon
+                </span>
+              </li>
+            </ul>
           </Card>
         </>
       )}
