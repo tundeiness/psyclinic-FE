@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
 import { Card, Button, Alert, LoadingState } from "@/components/ui";
 import { useRequireRole } from "@/lib/useRequireRole";
 import {
@@ -9,7 +10,8 @@ import {
   Appointment,
 } from "@/lib/clientApi";
 import { isApiError } from "@/lib/apiError";
-import { formatDateTime, statusLabel } from "@/lib/format";
+import { formatDateTime, formatNaira, statusLabel } from "@/lib/format";
+import { ExpiryCountdown } from "@/components/ExpiryCountdown";
 
 const STATUS_STYLES: Record<string, string> = {
   booked: "bg-green-50 text-green-700",
@@ -88,6 +90,13 @@ export default function AppointmentsPage() {
         {list?.map((a) => {
           const cancellable =
             a.status === "booked" || a.status === "pending_payment";
+          // v2 resume-payment: pending_payment appointments can be
+          // resumed via the mock checkout page. Both fields come
+          // from the serializer for pending_payment statuses.
+          const canResume =
+            a.status === "pending_payment" &&
+            !!a.payment?.provider_reference &&
+            !!a.payment?.id;
           return (
             <Card key={a.id}>
               <div className="flex items-start justify-between gap-3">
@@ -105,17 +114,39 @@ export default function AppointmentsPage() {
                   >
                     {statusLabel(a.status)}
                   </span>
+                  {canResume && a.payment && (
+                    <p className="mt-1 text-xs text-amber-800">
+                      Awaiting payment — {formatNaira(a.payment.amount_cents)}
+                    </p>
+                  )}
+                  {canResume && a.payment?.expires_at && (
+                    <p className="mt-1">
+                      <ExpiryCountdown expiresAt={a.payment.expires_at} />
+                    </p>
+                  )}
                 </div>
-                {cancellable && (
-                  <Button
-                    variant="ghost"
-                    className="!w-auto"
-                    loading={busyId === a.id}
-                    onClick={() => onCancel(a.id)}
-                  >
-                    Cancel
-                  </Button>
-                )}
+                <div className="flex flex-col gap-2">
+                  {canResume && a.payment && (
+                    <Link
+                      href={`/checkout/${encodeURIComponent(
+                        a.payment.provider_reference!
+                      )}?appointment=${a.id}&payment=${a.payment.id}`}
+                      className="rounded-xl bg-brand-500 px-3 py-1.5 text-center text-sm font-semibold text-white no-underline transition hover:bg-brand-600"
+                    >
+                      Resume payment
+                    </Link>
+                  )}
+                  {cancellable && (
+                    <Button
+                      variant="ghost"
+                      className="!w-auto"
+                      loading={busyId === a.id}
+                      onClick={() => onCancel(a.id)}
+                    >
+                      Cancel
+                    </Button>
+                  )}
+                </div>
               </div>
             </Card>
           );

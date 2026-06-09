@@ -1,10 +1,14 @@
 "use client";
 
-import { useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAppSelector } from "@/store";
-import { Card, Button } from "@/components/ui";
+import { Card, Button, Alert } from "@/components/ui";
+import { fetchAppointments, fetchSessionBlocks, payInstallment, Appointment, SessionBlock } from "@/lib/clientApi";
+import { isApiError } from "@/lib/apiError";
+import { formatDateTime, formatNaira } from "@/lib/format";
+import { ExpiryCountdown } from "@/components/ExpiryCountdown";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -70,16 +74,34 @@ export default function DashboardPage() {
       </div>
 
       {user.role === "client" && (
-        <div className="grid gap-4 sm:grid-cols-3">
-          <Card>
+        <>
+          <ClientPendingPayments />
+          <ClientSessionBlockPanel />
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <Card>
             <p className="text-xs font-medium uppercase tracking-wide text-accent-indigo-600">
               Book a session
             </p>
             <p className="mt-2 text-sm text-slate-600">
-              Pick a date and a therapist. Your first session is free.
+              Pick a date and a therapist. The first session with a new
+              therapist is an <strong>assessment session</strong>.
             </p>
             <Link href="/book" className="mt-4 inline-block">
               <Button className="!w-auto">Go to booking</Button>
+            </Link>
+          </Card>
+          <Card>
+            <p className="text-xs font-medium uppercase tracking-wide text-accent-amber-600">
+              Buy a block
+            </p>
+            <p className="mt-2 text-sm text-slate-600">
+              6 sessions with your current therapist. Required after
+              your assessment.
+            </p>
+            <Link href="/buy-block" className="mt-4 inline-block">
+              <Button variant="ghost" className="!w-auto">
+                Open
+              </Button>
             </Link>
           </Card>
           <Card>
@@ -108,7 +130,8 @@ export default function DashboardPage() {
               </Button>
             </Link>
           </Card>
-        </div>
+          </div>
+        </>
       )}
 
       {user.role === "therapist" && (
@@ -205,4 +228,197 @@ export default function DashboardPage() {
       )}
     </main>
   );
+}
+
+// Pending-payments panel for clients. If they closed the checkout
+// page mid-flow (or the page errored), their appointment is stuck in
+// :pending_payment. Surface those with a "Resume" link to the
+// checkout. Renders nothing when no pending payments — no empty box
+// cluttering the dashboard.
+function ClientPendingPayments() {
+  const [pending, setPending] = useState<Appointment[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    try {
+      const all = await fetchAppointments();
+      setPending(all.filter((a) => a.status === "pending_payment"));
+    } catch (e) {
+      setError(
+        isApiError(e) ? e.message : "Could not load pending payments."
+      );
+    }
+  }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  if (error) {
+    return (
+      <div className="mb-4">
+        <Alert kind="error">{error}</Alert>
+      </div>
+    );
+  }
+
+  if (!pending || pending.length === 0) return null;
+
+  return (
+    <Card className="mb-4 bg-amber-50/50 ring-1 ring-amber-100">
+      <h2 className="text-sm font-semibold uppercase tracking-wide text-amber-800">
+        Pending payments
+      </h2>
+      <p className="mt-1 text-sm text-amber-900/80">
+        You have {pending.length} session
+        {pending.length === 1 ? "" : "s"} awaiting payment. Until paid,
+        the slot is reserved but not confirmed.
+      </p>
+      <ul className="mt-3 divide-y divide-amber-100">
+        {pending.map((appt) => {
+          const intent = appt.payment?.provider_reference ?? "";
+          const canResume =
+            intent.length > 0 && appt.payment?.id !== undefined;
+          return (
+            <li
+              key={appt.id}
+              className="flex items-center justify-between gap-3 py-2"
+            >
+              <div>
+                <p className="text-sm font-medium text-slate-800">
+                  {appt.therapist.name}
+                </p>
+                <p className="text-xs text-slate-600">
+                  {formatDateTime(appt.slot.starts_at)}
+                </p>
+                {appt.payment && (
+                  <p className="text-xs text-slate-500">
+                    Due: {formatNaira(appt.payment.amount_cents)}
+                  </p>
+                )}
+                {appt.payment?.expires_at && (
+                  <p className="mt-1">
+                    <ExpiryCountdown expiresAt={appt.payment.expires_at} />
+                  </p>
+                )}
+              </div>
+              {canResume ? (
+                <Link
+                  href={`/checkout/${encodeURIComponent(intent)}?appointment=${appt.id}&payment=${appt.payment!.id}`}
+                  className="rounded-xl bg-amber-200 px-3 py-1.5 text-xs font-semibold text-amber-900 no-underline transition hover:bg-amber-300"
+                >
+                  Resume payment →
+                </Link>
+              ) : (
+                <span className="text-xs text-slate-500">
+                  No payment context
+                </span>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+    </Card>
+  );
+}
+
+// Block status panel for clients. Shows:
+//  - "Active block: N of 6 sessions remaining" if they have one
+//  - "Buy a block to continue" call-to-action after their assessment
+//    (current_therapist set, but no active block)
+//  - Nothing if they haven't done an assessment yet (in which case
+//    the "Book a session" card already invites them to the
+//    assessment).
+function ClientSessionBlockPanel() {
+  const router = useRouter();
+  const [blocks, setBlocks] = useState<SessionBlock[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [busyId, setBusyId] = useState<number | null>(null);
+
+  const load = useCallback(async () => {
+    try {
+      const list = await fetchSessionBlocks();
+      setBlocks(list);
+    } catch (e) {
+      setError(isApiError(e) ? e.message : "Could not load blocks.");
+    }
+  }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  async function onPayInstallment(blockId: number) {
+    setBusyId(blockId);
+    setError(null);
+    try {
+      const { payment } = await payInstallment(blockId);
+      const intent = payment.provider_reference;
+      if (!intent) {
+        setError("Installment created but no payment intent was returned.");
+        setBusyId(null);
+        return;
+      }
+      router.push(
+        `/checkout/${encodeURIComponent(intent)}?block=${blockId}&payment=${payment.id}`
+      );
+    } catch (e) {
+      setError(
+        isApiError(e) ? e.message : "Could not start the installment payment."
+      );
+      setBusyId(null);
+    }
+  }
+
+  if (error) {
+    return (
+      <div className="mb-4">
+        <Alert kind="error">{error}</Alert>
+      </div>
+    );
+  }
+  if (!blocks) return null;
+
+  const active = blocks.find(
+    (b) =>
+      b.status === "active" &&
+      b.sessions_remaining > 0 &&
+      b.first_payment_status === "succeeded"
+  );
+
+  if (active) {
+    return (
+      <Card className="mb-4 bg-emerald-50/50 ring-1 ring-emerald-100">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-emerald-800">
+          Active session block
+        </h2>
+        <p className="mt-1 text-sm text-emerald-900/80">
+          <strong>{active.sessions_remaining}</strong> of{" "}
+          {active.sessions_total} sessions remaining with{" "}
+          {active.therapist_name ?? "your therapist"}.
+        </p>
+        {active.installment_due && (
+          <div className="mt-3 rounded-xl bg-amber-100/70 p-3">
+            <p className="text-sm font-semibold text-amber-900">
+              Installment due
+            </p>
+            <p className="mt-1 text-xs text-amber-900/80">
+              You&apos;ve used 3 sessions on your installment plan. Pay
+              the remaining 40% to book more sessions.
+            </p>
+            <button
+              type="button"
+              onClick={() => onPayInstallment(active.id)}
+              disabled={busyId !== null}
+              className="mt-3 rounded-xl bg-amber-500 px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-amber-600 disabled:opacity-60"
+            >
+              {busyId === active.id ? "Starting…" : "Pay remaining now"}
+            </button>
+          </div>
+        )}
+      </Card>
+    );
+  }
+
+  return null;
 }

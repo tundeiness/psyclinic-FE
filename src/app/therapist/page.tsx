@@ -190,42 +190,94 @@ export default function TherapistSchedulePage() {
       {appts && appts.length === 0 && (
         <Alert kind="info">No appointments yet.</Alert>
       )}
-      <div className="space-y-2">
-        {appts?.map((a) => (
-          <Card key={a.id}>
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <p className="font-medium text-slate-800">{a.client.name}</p>
-                <p className="text-sm text-slate-600">
-                  {formatDateTime(a.slot.starts_at)}
-                </p>
-                <span className="mt-1 inline-block text-xs capitalize text-slate-500">
-                  {statusLabel(a.status)}
-                </span>
-              </div>
-              {a.status === "booked" && (
-                <div className="flex flex-col gap-2">
-                  <Button
-                    className="!w-auto"
-                    loading={busy}
-                    onClick={() => onStatus(a.id, "completed")}
-                  >
-                    Mark done
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    className="!w-auto"
-                    loading={busy}
-                    onClick={() => onStatus(a.id, "cancelled")}
-                  >
-                    Cancel
-                  </Button>
-                </div>
-              )}
+      {(() => {
+        if (!appts) return null;
+        // Hide abandoned states (payment_failed, cancelled) from the
+        // main list — the slot is released and the therapist has no
+        // action to take. Surface them behind a toggle so they're
+        // still inspectable if needed.
+        const active = appts.filter(
+          (a) =>
+            a.status !== "payment_failed" && a.status !== "cancelled"
+        );
+        const abandoned = appts.filter(
+          (a) =>
+            a.status === "payment_failed" || a.status === "cancelled"
+        );
+        return (
+          <>
+            <div className="space-y-2">
+              {active.map((a) => (
+                <Card key={a.id}>
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="font-medium text-slate-800">
+                        {a.client.name}
+                      </p>
+                      <p className="text-sm text-slate-600">
+                        {formatDateTime(a.slot.starts_at)}
+                      </p>
+                      <span className="mt-1 inline-block text-xs capitalize text-slate-500">
+                        {statusLabel(a.status)}
+                      </span>
+                      {a.status === "pending_payment" && (
+                        <p className="mt-1 text-xs text-amber-700">
+                          Waiting on client payment. Slot is reserved
+                          until paid or abandoned.
+                        </p>
+                      )}
+                    </div>
+                    {a.status === "booked" && (
+                      <div className="flex flex-col gap-2">
+                        <Button
+                          className="!w-auto"
+                          loading={busy}
+                          onClick={() => onStatus(a.id, "completed")}
+                        >
+                          Mark done
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          className="!w-auto"
+                          loading={busy}
+                          onClick={() => onStatus(a.id, "cancelled")}
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </Card>
+              ))}
             </div>
-          </Card>
-        ))}
-      </div>
+
+            {abandoned.length > 0 && (
+              <details className="mt-4 text-sm text-slate-500">
+                <summary className="cursor-pointer">
+                  Abandoned bookings ({abandoned.length}) — payment
+                  failed or cancelled. The slot was released; no
+                  action needed.
+                </summary>
+                <div className="mt-3 space-y-2 opacity-70">
+                  {abandoned.map((a) => (
+                    <Card key={a.id}>
+                      <p className="text-sm text-slate-700">
+                        {a.client.name}
+                      </p>
+                      <p className="text-xs text-slate-500">
+                        {formatDateTime(a.slot.starts_at)} ·{" "}
+                        <span className="capitalize">
+                          {statusLabel(a.status)}
+                        </span>
+                      </p>
+                    </Card>
+                  ))}
+                </div>
+              </details>
+            )}
+          </>
+        );
+      })()}
     </main>
   );
 }

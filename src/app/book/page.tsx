@@ -1,100 +1,130 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Card, Button, Alert, Field } from "@/components/ui";
 import { useRequireRole } from "@/lib/useRequireRole";
 import {
   fetchSlots,
+  fetchSessionBlocks,
   bookAppointment,
-  confirmPayment,
-  fetchAppointments,
   Slot,
-  Payment,
+  SessionBlock,
 } from "@/lib/clientApi";
 import { isApiError } from "@/lib/apiError";
 import { formatDateTime, ymd } from "@/lib/format";
 
-type Stage =
-  | { name: "browsing" }
-  | { name: "booked"; payment: Payment; appointmentId: number }
-  | { name: "paid" }
-  | { name: "payment_failed" };
-
+// Next.js 14 requires components calling useSearchParams() to be
+// wrapped in a Suspense boundary.
 export default function BookPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="mx-auto max-w-3xl px-5 py-10">
+          <p className="text-sm text-slate-500">Loading…</p>
+        </main>
+      }
+    >
+      <BookPageInner />
+    </Suspense>
+  );
+}
+
+function BookPageInner() {
   const { ready } = useRequireRole("client");
+  const router = useRouter();
+  const search = useSearchParams();
 
   const [date, setDate] = useState<string>(ymd(new Date()));
   const [slots, setSlots] = useState<Slot[] | null>(null);
+  const [activeBlock, setActiveBlock] = useState<SessionBlock | null>(null);
+  const [blocksLoaded, setBlocksLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
-  const [stage, setStage] = useState<Stage>({ name: "browsing" });
-  // null = unknown yet; true = first-ever booker; false = has prior.
-  const [firstTime, setFirstTime] = useState<boolean | null>(null);
+  const [busySlotId, setBusySlotId] = useState<number | null>(null);
 
-  // Check if the user already has any non-cancelled appointments. If
-  // not, their next booking is free under the practice's first-session
-  // rule.
-  useEffect(() => {
-    if (!ready) return;
-    fetchAppointments()
-      .then((appts) => {
-        setFirstTime(
-          appts.filter((a) => a.status !== "cancelled").length === 0
-        );
-      })
-      .catch(() => setFirstTime(null));
-  }, [ready]);
+  const failed = search.get("payment_failed") === "1";
+
+  // Load the client's session blocks once on mount. We need to know
+  // whether they have a paid block before fetching slots, because the
+  // slot list differs:
+  //   - With active paid block: only show their current therapist's
+  //     slots (normal-session restriction).
+  //   - Without: show all therapists' slots (assessment-session
+  //     mode — they can pick any therapist).
+  const loadBlocks = useCallback(async () => {
+    try {
+      const blocks = await fetchSessionBlocks();
+      const found = blocks.find(
+        (b) =>
+          b.status === "active" &&
+          b.sessions_remaining > 0 &&
+          b.first_payment_status === "succeeded"
+      );
+      setActiveBlock(found ?? null);
+    } catch (e) {
+      setError(isApiError(e) ? e.message : "Could not load block status.");
+    } finally {
+      setBlocksLoaded(true);
+    }
+  }, []);
 
   const loadSlots = useCallback(async () => {
-    setError(null);
+    if (!blocksLoaded) return;
     setSlots(null);
     try {
-      const data = await fetchSlots({ date });
+      // v2: filter slots to the current therapist when normal-session
+      // booking is the mode. fetchSlots accepts a therapist_id filter.
+      const args: { date: string; therapist_profile_id?: number } = { date };
+      if (activeBlock) {
+        args.therapist_profile_id = activeBlock.therapist_profile_id;
+      }
+      const data = await fetchSlots(args);
       setSlots(data);
     } catch (e) {
       setError(isApiError(e) ? e.message : "Could not load availability.");
     }
-  }, [date]);
+  }, [date, blocksLoaded, activeBlock]);
 
   useEffect(() => {
-    if (ready) loadSlots();
-  }, [ready, loadSlots]);
+    if (ready) loadBlocks();
+  }, [ready, loadBlocks]);
+
+  useEffect(() => {
+    if (ready && blocksLoaded) loadSlots();
+  }, [ready, blocksLoaded, loadSlots]);
 
   async function onBook(slot: Slot) {
-    setBusy(true);
+    setBusySlotId(slot.id);
     setError(null);
     try {
+      // Branch session_kind based on whether there's an active block.
+      const kind: "normal" | "assessment" = activeBlock ? "normal" : "assessment";
+
       const { appointment, payment } = await bookAppointment({
         availability_slot_id: slot.id,
+        session_kind: kind,
       });
-      setStage({
-        name: "booked",
-        payment,
-        appointmentId: appointment.id,
-      });
-    } catch (e) {
-      setError(isApiError(e) ? e.message : "Booking failed.");
-    } finally {
-      setBusy(false);
-    }
-  }
 
-  async function onPay(force: boolean) {
-    if (stage.name !== "booked") return;
-    setBusy(true);
-    setError(null);
-    try {
-      const { payment } = await confirmPayment(stage.payment.id, force);
-      setStage(
-        payment.status === "succeeded"
-          ? { name: "paid" }
-          : { name: "payment_failed" }
+      if (kind === "normal") {
+        // Normal session: appointment is :booked, no payment intent,
+        // block decremented server-side. Go straight to confirmation.
+        router.push(`/booking/confirmed/${appointment.id}`);
+        return;
+      }
+
+      // Assessment session: needs the mock checkout.
+      const intent = payment?.provider_reference;
+      if (!intent || !payment) {
+        setError("Booking succeeded but no payment intent was returned.");
+        setBusySlotId(null);
+        return;
+      }
+      router.push(
+        `/checkout/${encodeURIComponent(intent)}?appointment=${appointment.id}&payment=${payment.id}`
       );
     } catch (e) {
-      setError(isApiError(e) ? e.message : "Payment could not be processed.");
-      setStage({ name: "payment_failed" });
-    } finally {
-      setBusy(false);
+      setError(isApiError(e) ? e.message : "Booking failed.");
+      setBusySlotId(null);
     }
   }
 
@@ -111,114 +141,79 @@ export default function BookPage() {
       <h1 className="mb-1 text-xl font-semibold text-brand-700 sm:text-2xl">
         Book a session
       </h1>
-      <p className="mb-6 text-sm text-slate-600">
-        Pick a date to see therapists available that day.
-      </p>
 
-      {error && <Alert kind="error">{error}</Alert>}
-
-      {stage.name === "browsing" && (
-        <>
-          {firstTime === true && (
-            <Alert kind="success">
-              Your first session is on us — this booking will be{" "}
-              <strong>free</strong>.
-            </Alert>
-          )}
-          <Card className="mb-5">
-            <Field
-              id="date"
-              label="Date"
-              type="date"
-              value={date}
-              min={ymd(new Date())}
-              onChange={(e) => setDate(e.target.value)}
-            />
-          </Card>
-
-          {!slots && <p className="text-sm text-slate-500">Loading slots…</p>}
-
-          {slots && slots.length === 0 && (
-            <Alert kind="info">
-              No available sessions on this date. Try another day.
-            </Alert>
-          )}
-
-          <div className="space-y-3">
-            {slots?.map((s) => (
-              <Card key={s.id}>
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <p className="font-medium text-slate-800">
-                      {s.therapist_name}
-                    </p>
-                    <p className="text-sm text-slate-600">
-                      {formatDateTime(s.starts_at)}
-                    </p>
-                  </div>
-                  <Button
-                    onClick={() => onBook(s)}
-                    loading={busy}
-                    className="!w-auto"
-                  >
-                    Book
-                  </Button>
-                </div>
-              </Card>
-            ))}
-          </div>
-        </>
+      {/* Contextual banner reflecting what kind of session this will
+          be. The user benefits from knowing whether their session
+          will be charged separately (assessment) or drawn from their
+          block (normal). */}
+      {blocksLoaded && activeBlock && (
+        <p className="mb-6 text-sm text-slate-600">
+          Booking a <strong>normal session</strong> with{" "}
+          {activeBlock.therapist_name ?? "your current therapist"}.{" "}
+          You have <strong>{activeBlock.sessions_remaining}</strong> of{" "}
+          {activeBlock.sessions_total} sessions remaining in your block.
+        </p>
+      )}
+      {blocksLoaded && !activeBlock && (
+        <p className="mb-6 text-sm text-slate-600">
+          Pick a date and a therapist. The first session with a new
+          therapist is an <strong>assessment session</strong>{" "}
+          (charged separately).
+        </p>
       )}
 
-      {stage.name === "booked" && (
-        <Card>
-          <h2 className="text-base font-semibold">Complete payment</h2>
-          <p className="mt-1 text-sm text-slate-600">
-            Your slot is reserved. Amount due:{" "}
-            <strong>
-              {stage.payment.currency}{" "}
-              {(stage.payment.amount_cents / 100).toFixed(2)}
-            </strong>
-            . This is a simulated gateway (Stripe-shaped) — no real card is
-            charged.
-          </p>
-          <div className="mt-4 flex flex-col gap-2 sm:flex-row">
-            <Button onClick={() => onPay(false)} loading={busy}>
-              Pay now
-            </Button>
-            <Button
-              variant="ghost"
-              onClick={() => onPay(true)}
-              loading={busy}
-            >
-              Simulate failed payment
-            </Button>
-          </div>
-        </Card>
-      )}
-
-      {stage.name === "paid" && (
-        <Alert kind="success">
-          Payment successful — your appointment is confirmed. The therapist
-          has been notified. You can see it under{" "}
-          <a href="/appointments" className="underline">
-            My appointments
-          </a>
-          .
+      {failed && (
+        <Alert kind="error">
+          The previous payment didn&apos;t go through — the slot was
+          released. Try again or pick a different time.
         </Alert>
       )}
 
-      {stage.name === "payment_failed" && (
-        <>
-          <Alert kind="error">
-            Payment failed and the slot was released. You can try booking
-            again.
-          </Alert>
-          <Button onClick={() => setStage({ name: "browsing" })}>
-            Back to availability
-          </Button>
-        </>
+      {error && <Alert kind="error">{error}</Alert>}
+
+      <Card className="mb-5">
+        <Field
+          id="date"
+          label="Date"
+          type="date"
+          value={date}
+          min={ymd(new Date())}
+          onChange={(e) => setDate(e.target.value)}
+        />
+      </Card>
+
+      {!slots && <p className="text-sm text-slate-500">Loading slots…</p>}
+
+      {slots && slots.length === 0 && (
+        <Alert kind="info">
+          No available sessions on this date. Try another day.
+        </Alert>
       )}
+
+      <div className="space-y-3">
+        {slots?.map((s) => (
+          <Card key={s.id}>
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="font-medium text-slate-800">
+                  {s.therapist_name}
+                </p>
+                <p className="text-sm text-slate-600">
+                  {formatDateTime(s.starts_at)}
+                </p>
+              </div>
+              <Button
+                onClick={() => onBook(s)}
+                loading={busySlotId === s.id}
+                disabled={busySlotId !== null && busySlotId !== s.id}
+                className="!w-auto"
+              >
+                Book
+              </Button>
+            </div>
+          </Card>
+        ))}
+      </div>
     </main>
   );
 }
