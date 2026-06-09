@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/store";
 import { logout } from "@/store/authSlice";
@@ -44,6 +45,13 @@ const ICON = {
         d="M19.4 15a1.7 1.7 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 01-4 0v-.1a1.7 1.7 0 00-1.1-1.5 1.7 1.7 0 00-1.8.3l-.1.1A2 2 0 114.3 17l.1-.1a1.7 1.7 0 00.3-1.8 1.7 1.7 0 00-1.5-1H3a2 2 0 010-4h.1a1.7 1.7 0 001.5-1 1.7 1.7 0 00-.3-1.8l-.1-.1A2 2 0 117 4.3l.1.1a1.7 1.7 0 001.8.3H9a1.7 1.7 0 001-1.5V3a2 2 0 014 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.8-.3l.1-.1A2 2 0 1119.7 7l-.1.1a1.7 1.7 0 00-.3 1.8V9a1.7 1.7 0 001.5 1H21a2 2 0 010 4h-.1a1.7 1.7 0 00-1.5 1z" />
     </svg>
   ),
+  contracts: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+      className="h-5 w-5">
+      <path strokeLinecap="round" strokeLinejoin="round"
+        d="M9 12h6m-6 4h4m1 4H7a2 2 0 01-2-2V6a2 2 0 012-2h7l5 5v11a2 2 0 01-2 2z" />
+    </svg>
+  ),
   logout: (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
       className="h-5 w-5">
@@ -70,6 +78,7 @@ const NAV: NavItem[] = [
   { href: "/admin",            label: "Dashboard",  icon: ICON.dashboard },
   { href: "/admin/clients",    label: "Clients",    icon: ICON.clients },
   { href: "/admin/therapists", label: "Therapists", icon: ICON.therapists },
+  { href: "/admin/contracts",  label: "Contracts",  icon: ICON.contracts },
   { href: "/admin/settings",   label: "Settings",   icon: ICON.settings },
 ];
 
@@ -91,6 +100,7 @@ export default function AdminLayout({
     "/admin": "Dashboard",
     "/admin/clients": "Clients",
     "/admin/therapists": "Therapists",
+    "/admin/contracts": "Contracts",
     "/admin/settings": "Settings",
   };
   const pageTitle = titleByPath[pathname ?? "/admin"] ?? "Admin";
@@ -98,11 +108,14 @@ export default function AdminLayout({
   const sidebarContent = (
     <>
       <Link href="/admin" className="flex items-center gap-2 px-6 py-6">
-        <span
-          aria-hidden
-          className="inline-block h-8 w-8 rounded-2xl bg-gradient-to-br from-brand-500 to-brand-700 shadow-soft"
+        <Image
+          src="/logo.png"
+          alt="Cerca Africa"
+          width={310}
+          height={120}
+          priority
+          className="h-10 w-auto"
         />
-        <span className="text-lg font-semibold text-slate-800">PsyClinic</span>
       </Link>
 
       <nav className="flex flex-1 flex-col gap-1 px-3">
@@ -209,7 +222,7 @@ export default function AdminLayout({
 
           <div className="min-w-0 flex-1">
             <p className="text-xs font-medium text-slate-500">
-              Admin · PsyClinic
+              Admin · Cerca Africa
             </p>
             <h1 className="truncate text-base font-semibold text-slate-800 sm:text-lg">
               {pageTitle}

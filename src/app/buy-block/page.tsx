@@ -8,6 +8,7 @@ import { useRequireRole } from "@/lib/useRequireRole";
 import {
   fetchSessionBlocks,
   purchaseSessionBlock,
+  fetchContractStatus,
   SessionBlock,
 } from "@/lib/clientApi";
 import { fetchPublicPricing } from "@/lib/publicApi";
@@ -46,10 +47,21 @@ function BuyBlockPageInner() {
   const load = useCallback(async () => {
     setError(null);
     try {
-      const [bs, s] = await Promise.all([
+      const [bs, s, contract] = await Promise.all([
         fetchSessionBlocks(),
         fetchPublicPricing(),
+        fetchContractStatus(),
       ]);
+
+      // Phase 8: gate on signed contract. If client hasn't signed (or
+      // has only a pending upload), bounce them to the contract page.
+      // Backend also enforces this; the redirect is just better UX
+      // than seeing an error message after clicking Purchase.
+      if (!contract.signed_contract?.valid_for_use) {
+        router.replace("/contract");
+        return;
+      }
+
       setBlocks(bs);
       setBlockPrice(s.block_full_price_cents);
       setInstallmentFirst(s.installment_first_amount_cents);
@@ -57,7 +69,7 @@ function BuyBlockPageInner() {
     } catch (e) {
       setError(isApiError(e) ? e.message : "Could not load.");
     }
-  }, []);
+  }, [router]);
 
   useEffect(() => {
     if (ready) load();

@@ -173,3 +173,41 @@ export async function demoteCoAdmin(
   );
   return res.data.therapist as AdminTherapist;
 }
+
+// ──────────────────────────────────────────────────────────────────
+// Phase 8: client contract certification queue
+// ──────────────────────────────────────────────────────────────────
+
+export interface AdminClientContract {
+  id: number;
+  client_profile_id: number;
+  client_name: string;
+  client_email: string;
+  contract_version: string;
+  signature_method: "electronic" | "uploaded";
+  signed_at: string;
+  certified_at: string | null;
+  certified_by_user_id: number | null;
+  sponsor_name: string | null;
+  has_uploaded_document: boolean;
+  pending_certification: boolean;
+}
+
+export async function fetchPendingContracts(): Promise<AdminClientContract[]> {
+  const res = await api.get("/admin/contracts/pending");
+  return res.data.contracts as AdminClientContract[];
+}
+
+export async function certifyContract(id: number): Promise<AdminClientContract> {
+  const res = await api.post(`/admin/contracts/${id}/certify`);
+  return res.data.contract as AdminClientContract;
+}
+
+// Returns a Blob URL for inspecting the uploaded contract document.
+// The caller is responsible for revoking the URL when done.
+export async function fetchContractDocument(id: number): Promise<Blob> {
+  const res = await api.get(`/admin/contracts/${id}/document`, {
+    responseType: "blob",
+  });
+  return res.data as Blob;
+}

@@ -5,8 +5,12 @@ import { Header } from "@/components/Header";
 import { AuthBootstrap } from "@/components/AuthBootstrap";
 
 export const metadata: Metadata = {
-  title: "PsyClinic",
-  description: "Clinical psychology practice — book sessions with therapists.",
+  title: "Cerca Africa Mind & Behaviour Clinic",
+  description:
+    "Book psychotherapy sessions with Cerca Africa's clinical psychologists.",
+  icons: {
+    icon: "/favicon.png",
+  },
 };
 
 // Mobile-first: correct scaling on iOS/Android, supports notch safe areas.

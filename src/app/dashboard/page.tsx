@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAppSelector } from "@/store";
 import { Card, Button, Alert } from "@/components/ui";
-import { fetchAppointments, fetchSessionBlocks, payInstallment, Appointment, SessionBlock } from "@/lib/clientApi";
+import { fetchAppointments, fetchSessionBlocks, fetchContractStatus, payInstallment, Appointment, SessionBlock, ContractStatus } from "@/lib/clientApi";
 import { isApiError } from "@/lib/apiError";
 import { formatDateTime, formatNaira } from "@/lib/format";
 import { ExpiryCountdown } from "@/components/ExpiryCountdown";
@@ -76,6 +76,7 @@ export default function DashboardPage() {
       {user.role === "client" && (
         <>
           <ClientPendingPayments />
+          <ClientContractStatusPanel />
           <ClientSessionBlockPanel />
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <Card>
@@ -421,4 +422,84 @@ function ClientSessionBlockPanel() {
   }
 
   return null;
+}
+
+// Contract-status panel. Shown to clients who have completed at least
+// one appointment (i.e. have a current_therapist set) but haven't yet
+// signed the current contract version. Renders nothing for clients
+// whose contract is signed and valid, OR who haven't yet had an
+// assessment session (they'll be prompted to sign after assessment,
+// not before it).
+function ClientContractStatusPanel() {
+  const [status, setStatus] = useState<ContractStatus | null>(null);
+  const [appts, setAppts] = useState<Appointment[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    try {
+      const [s, a] = await Promise.all([
+        fetchContractStatus(),
+        fetchAppointments(),
+      ]);
+      setStatus(s);
+      setAppts(a);
+    } catch (e) {
+      setError(isApiError(e) ? e.message : "Could not load contract status.");
+    }
+  }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  if (error) {
+    return (
+      <div className="mb-4">
+        <Alert kind="error">{error}</Alert>
+      </div>
+    );
+  }
+  if (!status || !appts) return null;
+  if (status.signed_contract?.valid_for_use) return null;
+
+  // Only nag clients who have at least one booked or completed
+  // appointment. Before their first booking, asking them to sign a
+  // contract is jumping the gun.
+  const hasBookedOrCompleted = appts.some(
+    (a) => a.status === "booked" || a.status === "completed"
+  );
+  if (!hasBookedOrCompleted) return null;
+
+  if (status.pending_contract) {
+    return (
+      <Card className="mb-4 bg-sky-50/50 ring-1 ring-sky-100">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-sky-800">
+          Contract awaiting verification
+        </h2>
+        <p className="mt-1 text-sm text-sky-900/80">
+          You&apos;ve uploaded your signed contract. Clinic staff will
+          verify it within one business day. You can&apos;t purchase a
+          session block until verification is complete.
+        </p>
+      </Card>
+    );
+  }
+
+  return (
+    <Card className="mb-4 bg-amber-50/50 ring-1 ring-amber-100">
+      <h2 className="text-sm font-semibold uppercase tracking-wide text-amber-800">
+        Sign your services contract
+      </h2>
+      <p className="mt-1 text-sm text-amber-900/80">
+        Before buying a session block, you need to sign the clinic&apos;s
+        services contract. Takes about a minute.
+      </p>
+      <Link
+        href="/contract"
+        className="mt-3 inline-block rounded-xl bg-amber-500 px-3 py-1.5 text-sm font-semibold text-white no-underline transition hover:bg-amber-600"
+      >
+        Review &amp; sign →
+      </Link>
+    </Card>
+  );
 }

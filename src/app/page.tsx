@@ -46,14 +46,14 @@ export default function HomePage() {
     <main className="mx-auto max-w-6xl px-5 py-12">
       <section className="overflow-hidden rounded-3xl bg-gradient-to-br from-brand-600 via-brand-700 to-slate-800 p-8 text-white shadow-soft sm:p-12">
         <p className="text-xs font-medium uppercase tracking-wider text-white/70">
-          PsyClinic
+          Cerca Africa Mind &amp; Behaviour Clinic
         </p>
         <h1 className="mt-2 text-3xl font-semibold sm:text-4xl">
           Find the right therapist for you
         </h1>
         <p className="mt-3 max-w-xl text-sm text-white/80 sm:text-base">
-          Browse our clinical psychologists, read about their focus areas,
-          and book a session in minutes. Your first session is on us.
+          Browse our clinical psychologists, read about their focus
+          areas, and book your assessment session in minutes.
         </p>
         <div className="mt-6 flex flex-col gap-3 sm:flex-row">
           <Link href="/therapists">

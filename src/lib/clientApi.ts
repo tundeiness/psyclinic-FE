@@ -72,7 +72,7 @@ export async function fetchSlots(params: {
   return res.data.availability_slots as Slot[];
 }
 
-// v2: a 6-session block purchased by the client.
+// v2 Phase 8: a 6-session block purchased by the client.
 export interface SessionBlock {
   id: number;
   therapist_profile_id: number;
@@ -209,4 +209,64 @@ export async function uploadDocument(file: File): Promise<void> {
 
 export async function deleteDocument(id: number): Promise<void> {
   await api.delete(`/me/documents/${id}`);
+}
+
+// ──────────────────────────────────────────────────────────────────
+// Phase 8: client services contract
+// ──────────────────────────────────────────────────────────────────
+
+export interface ClientContract {
+  id: number;
+  contract_version: string;
+  signature_method: "electronic" | "uploaded";
+  signed_at: string;
+  valid_for_use: boolean;
+  pending_certification: boolean;
+  certified_at: string | null;
+  electronic_signature_name: string | null;
+  sponsor_name: string | null;
+  has_uploaded_document: boolean;
+}
+
+export interface ContractStatus {
+  current_version: string;
+  signed_contract: ClientContract | null;
+  pending_contract: ClientContract | null;
+  requires_signing: boolean;
+}
+
+export async function fetchContractStatus(): Promise<ContractStatus> {
+  const res = await api.get("/client/contracts/current");
+  return res.data as ContractStatus;
+}
+
+export async function signContract(input: {
+  typed_name: string;
+  sponsor_name?: string;
+  sponsor_signature_typed?: string;
+}): Promise<ClientContract> {
+  const res = await api.post("/client/contracts/sign", input);
+  return res.data.contract as ClientContract;
+}
+
+export async function uploadSignedContract(input: {
+  file: File;
+  sponsor_name?: string;
+}): Promise<ClientContract> {
+  const form = new FormData();
+  form.append("file", input.file);
+  if (input.sponsor_name) form.append("sponsor_name", input.sponsor_name);
+  const res = await api.post("/client/contracts/upload", form, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+  return res.data.contract as ClientContract;
+}
+
+// Returns a Blob URL for downloading the personalized contract PDF.
+// Caller is responsible for revoking the URL after use.
+export async function downloadContractPdf(): Promise<Blob> {
+  const res = await api.get("/client/contracts/document", {
+    responseType: "blob",
+  });
+  return res.data as Blob;
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useAppSelector } from "@/store";
 import { UserMenu } from "@/components/UserMenu";
@@ -140,13 +141,18 @@ export function Header() {
           href={user ? "/dashboard" : "/"}
           className="flex items-center gap-2"
         >
-          <span
-            aria-hidden
-            className="inline-block h-6 w-6 rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 shadow-soft"
+          {/* Cerca Africa wordmark — sourced from the clinic's policy
+              document. PNG with solid white background; works on the
+              white header. Swap for an SVG/transparent PNG later when
+              available. Native dims 310x120 → ~83x32 at h-8. */}
+          <Image
+            src="/logo.png"
+            alt="Cerca Africa Mind & Behaviour Clinic"
+            width={310}
+            height={120}
+            priority
+            className="h-8 w-auto"
           />
-          <span className="text-lg font-semibold text-slate-800">
-            PsyClinic
-          </span>
         </Link>
         <nav className="flex flex-wrap items-center justify-end gap-x-3 gap-y-2 text-sm">
           {navLinks()}
