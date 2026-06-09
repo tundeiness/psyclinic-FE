@@ -194,19 +194,19 @@ export interface AdminClientContract {
 }
 
 export async function fetchPendingContracts(): Promise<AdminClientContract[]> {
-  const res = await api.get("/admin/contracts/pending");
+  const res = await api.get("/staff/contracts/pending");
   return res.data.contracts as AdminClientContract[];
 }
 
 export async function certifyContract(id: number): Promise<AdminClientContract> {
-  const res = await api.post(`/admin/contracts/${id}/certify`);
+  const res = await api.post(`/staff/contracts/${id}/certify`);
   return res.data.contract as AdminClientContract;
 }
 
 // Returns a Blob URL for inspecting the uploaded contract document.
 // The caller is responsible for revoking the URL when done.
 export async function fetchContractDocument(id: number): Promise<Blob> {
-  const res = await api.get(`/admin/contracts/${id}/document`, {
+  const res = await api.get(`/staff/contracts/${id}/document`, {
     responseType: "blob",
   });
   return res.data as Blob;
