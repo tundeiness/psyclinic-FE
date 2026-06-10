@@ -8,6 +8,11 @@ export interface TherapistClient {
   date_of_birth: string | null;
   notes: string | null;
   user: { id: number; full_name: string; email: string };
+  // Phase 12: signals the therapist UI uses to flag clients per the
+  // Cerca Africa policy ("Missing 3 consecutive sessions will lead
+  // to a review of therapy or coaching goals").
+  consecutive_no_shows?: number;
+  treatment_review_recommended?: boolean;
 }
 
 // ---- availability ----

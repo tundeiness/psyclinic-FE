@@ -17,13 +17,17 @@ export interface Appointment {
     | "booked"
     | "completed"
     | "cancelled"
-    | "payment_failed";
+    | "payment_failed"
+    | "no_show";
   // v2: assessment session (first with this therapist, individually
   // paid) vs normal session (drawn from a SessionBlock). Backend
   // defaults to "normal" — bookAppointment() explicitly sends
   // "assessment" for now since block-purchasing is a later phase.
   session_kind?: "assessment" | "normal";
   reason: string | null;
+  // Phase 12 audit signals.
+  cancellation_reason?: string | null;
+  no_show_marked_at?: string | null;
   client: { id: number; name: string };
   therapist: { id: number; name: string };
   slot: { id: number; starts_at: string; ends_at: string };
@@ -176,8 +180,16 @@ export async function fetchAppointments(): Promise<Appointment[]> {
   return res.data.appointments as Appointment[];
 }
 
-export async function cancelAppointment(id: number): Promise<void> {
-  await api.delete(`/client/appointments/${id}`);
+export async function cancelAppointment(
+  id: number,
+  cancellationReason?: string
+): Promise<void> {
+  await api.delete(`/client/appointments/${id}`, {
+    // Axios uses `data` for DELETE bodies. The backend reads
+    // params[:cancellation_reason] which works for either query or
+    // body params.
+    data: cancellationReason ? { cancellation_reason: cancellationReason } : {},
+  });
 }
 
 // ---- profile (avatar + documents) ----

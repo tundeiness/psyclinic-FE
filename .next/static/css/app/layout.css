@@ -812,6 +812,9 @@ video {
 .items-center {
   align-items: center;
 }
+.items-stretch {
+  align-items: stretch;
+}
 .justify-end {
   justify-content: flex-end;
 }
@@ -934,6 +937,10 @@ video {
 .border-dashed {
   border-style: dashed;
 }
+.border-amber-200 {
+  --tw-border-opacity: 1;
+  border-color: rgb(253 230 138 / var(--tw-border-opacity));
+}
 .border-brand-200 {
   --tw-border-opacity: 1;
   border-color: rgb(169 210 205 / var(--tw-border-opacity));
@@ -986,6 +993,9 @@ video {
 }
 .bg-amber-50\/50 {
   background-color: rgb(255 251 235 / 0.5);
+}
+.bg-amber-50\/70 {
+  background-color: rgb(255 251 235 / 0.7);
 }
 .bg-amber-500 {
   --tw-bg-opacity: 1;
@@ -1047,6 +1057,10 @@ video {
 .bg-rose-100 {
   --tw-bg-opacity: 1;
   background-color: rgb(255 228 230 / var(--tw-bg-opacity));
+}
+.bg-rose-50 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(255 241 242 / var(--tw-bg-opacity));
 }
 .bg-rose-50\/50 {
   background-color: rgb(255 241 242 / 0.5);
@@ -1582,6 +1596,9 @@ video {
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 150ms;
 }
+.duration-200 {
+  transition-duration: 200ms;
+}
 .duration-300 {
   transition-duration: 300ms;
 }
@@ -1613,6 +1630,15 @@ video {
 }
 .slide-in-from-bottom-2 {
   --tw-enter-translate-y: 0.5rem;
+}
+.slide-in-from-top-1 {
+  --tw-enter-translate-y: -0.25rem;
+}
+.slide-in-from-top-2 {
+  --tw-enter-translate-y: -0.5rem;
+}
+.duration-200 {
+  animation-duration: 200ms;
 }
 .duration-300 {
   animation-duration: 300ms;
@@ -1715,6 +1741,10 @@ body {
   --tw-bg-opacity: 1;
   background-color: rgb(254 242 242 / var(--tw-bg-opacity));
 }
+.hover\:bg-rose-100:hover {
+  --tw-bg-opacity: 1;
+  background-color: rgb(255 228 230 / var(--tw-bg-opacity));
+}
 .hover\:bg-slate-100:hover {
   --tw-bg-opacity: 1;
   background-color: rgb(241 245 249 / var(--tw-bg-opacity));
@@ -1745,6 +1775,10 @@ body {
 .hover\:text-red-600:hover {
   --tw-text-opacity: 1;
   color: rgb(220 38 38 / var(--tw-text-opacity));
+}
+.hover\:text-slate-700:hover {
+  --tw-text-opacity: 1;
+  color: rgb(51 65 85 / var(--tw-text-opacity));
 }
 .hover\:text-slate-800:hover {
   --tw-text-opacity: 1;

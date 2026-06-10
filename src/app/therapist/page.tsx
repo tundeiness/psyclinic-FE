@@ -218,13 +218,25 @@ export default function TherapistSchedulePage() {
                       <p className="text-sm text-slate-600">
                         {formatDateTime(a.slot.starts_at)}
                       </p>
-                      <span className="mt-1 inline-block text-xs capitalize text-slate-500">
+                      <span
+                        className={`mt-1 inline-block text-xs capitalize ${
+                          a.status === "no_show"
+                            ? "font-semibold text-rose-700"
+                            : "text-slate-500"
+                        }`}
+                      >
                         {statusLabel(a.status)}
                       </span>
                       {a.status === "pending_payment" && (
                         <p className="mt-1 text-xs text-amber-700">
                           Waiting on client payment. Slot is reserved
                           until paid or abandoned.
+                        </p>
+                      )}
+                      {a.status === "no_show" && (
+                        <p className="mt-1 text-xs text-rose-700">
+                          Client missed without 24h notice. Session
+                          counts as held.
                         </p>
                       )}
                     </div>
@@ -259,6 +271,14 @@ export default function TherapistSchedulePage() {
                         className="rounded-xl bg-brand-50 px-3 py-1.5 text-center text-sm font-semibold text-brand-700 no-underline transition hover:bg-brand-100"
                       >
                         Session note
+                      </Link>
+                    )}
+                    {a.status === "no_show" && (
+                      <Link
+                        href={`/therapist/appointments/${a.id}/note`}
+                        className="rounded-xl bg-rose-50 px-3 py-1.5 text-center text-sm font-semibold text-rose-700 no-underline transition hover:bg-rose-100"
+                      >
+                        Document no-show
                       </Link>
                     )}
                   </div>

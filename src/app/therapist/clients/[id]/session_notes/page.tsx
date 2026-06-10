@@ -47,7 +47,12 @@ export default function ClientSessionNotesPage() {
       // cancellations, payment failures.
       const mine = all
         .filter((a) => a.client.id === clientId)
-        .filter((a) => a.status === "booked" || a.status === "completed")
+        .filter(
+          (a) =>
+            a.status === "booked" ||
+            a.status === "completed" ||
+            a.status === "no_show"
+        )
         .sort(
           (a, b) =>
             new Date(b.slot.starts_at).getTime() -

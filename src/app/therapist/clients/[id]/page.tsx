@@ -70,6 +70,26 @@ export default function ClientDetailPage() {
             )}
           </Card>
 
+          {/* Phase 12: surface the policy-driven "3 consecutive
+              no-shows → review treatment plan" signal. Renders only
+              when the backend flags this client. */}
+          {client.treatment_review_recommended && (
+            <div className="mb-6 animate-in fade-in slide-in-from-top-2 duration-300">
+              <Card className="border border-amber-200 bg-amber-50/70">
+                <p className="text-sm font-semibold text-amber-900">
+                  Treatment plan review recommended
+                </p>
+                <p className="mt-1 text-sm text-amber-900/80">
+                  {client.user.full_name.split(" ")[0]} has missed{" "}
+                  {client.consecutive_no_shows ?? 3} consecutive sessions
+                  without notice. Per the clinic&apos;s policy,
+                  therapy goals should be re-evaluated and reassessment
+                  may be required.
+                </p>
+              </Card>
+            </div>
+          )}
+
           <Card>
             <h2 className="text-base font-medium text-slate-800">
               Clinical records (EMR)

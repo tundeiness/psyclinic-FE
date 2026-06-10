@@ -1,3 +1,11 @@
 {
-  "/therapist/page": "app/therapist/page.js"
+  "/dashboard/page": "app/dashboard/page.js",
+  "/therapist/page": "app/therapist/page.js",
+  "/login/page": "app/login/page.js",
+  "/therapist/appointments/[id]/note/page": "app/therapist/appointments/[id]/note/page.js",
+  "/therapist/clients/page": "app/therapist/clients/page.js",
+  "/therapist/clients/[id]/page": "app/therapist/clients/[id]/page.js",
+  "/therapist/clients/[id]/session_notes/page": "app/therapist/clients/[id]/session_notes/page.js",
+  "/admin/page": "app/admin/page.js",
+  "/admin/contracts/page": "app/admin/contracts/page.js"
 }
