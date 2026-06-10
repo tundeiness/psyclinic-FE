@@ -13,6 +13,7 @@ import {
   ContractStatus,
 } from "@/lib/clientApi";
 import { isApiError } from "@/lib/apiError";
+import { ContractFullText } from "@/components/ContractFullText";
 
 export default function ContractPage() {
   const { ready } = useRequireRole("client");
@@ -158,12 +159,33 @@ export default function ContractPage() {
 
       {error && <Alert kind="error">{error}</Alert>}
 
-      <Card className="mb-5">
+      <ContractSummary />
+
+      <Card className="mt-5">
+        <details className="group">
+          <summary className="flex cursor-pointer items-center justify-between text-base font-semibold text-slate-800">
+            <span>Read the full contract</span>
+            <span className="text-xs font-normal text-slate-500 group-open:hidden">
+              Click to expand
+            </span>
+            <span className="hidden text-xs font-normal text-slate-500 group-open:inline">
+              Click to collapse
+            </span>
+          </summary>
+          <div className="mt-4 border-t border-slate-200 pt-4">
+            <ContractFullText />
+          </div>
+        </details>
+      </Card>
+
+      <Card className="mt-5">
         <h2 className="text-base font-semibold text-slate-800">
-          Read the full contract
+          Want a copy?
         </h2>
         <p className="mt-2 text-sm text-slate-600">
-          Download a personalized PDF copy with your name pre-filled.
+          Download a personalized PDF with your name pre-filled. This
+          is the canonical version of the contract you&apos;re
+          agreeing to.
         </p>
         <Button
           variant="ghost"
@@ -175,8 +197,6 @@ export default function ContractPage() {
           Download PDF
         </Button>
       </Card>
-
-      <ContractSummary />
 
       <Card className="mt-5">
         <h2 className="text-base font-semibold text-slate-800">
