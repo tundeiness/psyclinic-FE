@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
 import { Card, Button, Alert, Field } from "@/components/ui";
 import { useRequireRole } from "@/lib/useRequireRole";
 import {
@@ -229,6 +230,12 @@ export default function TherapistSchedulePage() {
                     </div>
                     {a.status === "booked" && (
                       <div className="flex flex-col gap-2">
+                        <Link
+                          href={`/therapist/appointments/${a.id}/note`}
+                          className="rounded-xl bg-brand-50 px-3 py-1.5 text-center text-sm font-semibold text-brand-700 no-underline transition hover:bg-brand-100"
+                        >
+                          Session note
+                        </Link>
                         <Button
                           className="!w-auto"
                           loading={busy}
@@ -245,6 +252,14 @@ export default function TherapistSchedulePage() {
                           Cancel
                         </Button>
                       </div>
+                    )}
+                    {a.status === "completed" && (
+                      <Link
+                        href={`/therapist/appointments/${a.id}/note`}
+                        className="rounded-xl bg-brand-50 px-3 py-1.5 text-center text-sm font-semibold text-brand-700 no-underline transition hover:bg-brand-100"
+                      >
+                        Session note
+                      </Link>
                     )}
                   </div>
                 </Card>

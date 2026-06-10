@@ -44,7 +44,34 @@ export function Field({
       </label>
       <input
         id={id}
-        className="w-full rounded-2xl border border-slate-200 bg-white/70 px-3 py-3 text-base outline-none transition focus:border-brand-500 focus:bg-white focus:ring-4 focus:ring-brand-100"
+        className="w-full rounded-2xl border border-slate-200 bg-white/70 px-3 py-3 text-base outline-none transition focus:border-brand-500 focus:bg-white focus:ring-4 focus:ring-brand-100 disabled:bg-slate-50 disabled:text-slate-500"
+        {...props}
+      />
+      {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
+    </div>
+  );
+}
+
+// Multi-line text field with the same styling language as Field.
+// Used for narrative content (session notes, blog posts).
+export function TextArea({
+  label,
+  id,
+  error,
+  ...props
+}: React.TextareaHTMLAttributes<HTMLTextAreaElement> & {
+  label: string;
+  id: string;
+  error?: string;
+}) {
+  return (
+    <div>
+      <label htmlFor={id} className="mb-1 block text-sm font-medium text-slate-700">
+        {label}
+      </label>
+      <textarea
+        id={id}
+        className="w-full rounded-2xl border border-slate-200 bg-white/70 px-3 py-3 text-sm leading-relaxed outline-none transition focus:border-brand-500 focus:bg-white focus:ring-4 focus:ring-brand-100 disabled:bg-slate-50 disabled:text-slate-500"
         {...props}
       />
       {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
