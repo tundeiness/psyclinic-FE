@@ -1,8 +1,8 @@
-// File: /Users/tunde/Desktop/Dev/psyclinic-FE/src/app/buy-block/page.tsx
-import * as entry from '../../../../src/app/buy-block/page.js'
+// File: /Users/tunde/Desktop/Dev/psyclinic-FE/src/app/therapist/clients/[id]/page.tsx
+import * as entry from '../../../../../../src/app/therapist/clients/[id]/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 
-type TEntry = typeof import('../../../../src/app/buy-block/page.js')
+type TEntry = typeof import('../../../../../../src/app/therapist/clients/[id]/page.js')
 
 // Check that the entry is a valid entry
 checkFields<Diff<{

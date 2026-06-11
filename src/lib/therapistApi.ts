@@ -72,3 +72,27 @@ export async function fetchClient(id: number): Promise<TherapistClient> {
 // (Private clinical notes via the old ClientNote API removed in the
 // EMR redesign — replaced by structured forms under
 // /api/v1/clients/:id/intake_form, etc. See intakeApi.ts.)
+
+// Phase 15: PDF export helpers. Each returns a Blob suitable for
+// triggering a browser download via Object URL + temporary anchor.
+// Files are watermarked server-side when the underlying record is
+// unsigned (draft).
+
+export async function downloadIntakeFormPdf(
+  clientId: number
+): Promise<Blob> {
+  const res = await api.get(`/clients/${clientId}/intake_form/pdf`, {
+    responseType: "blob",
+  });
+  return res.data as Blob;
+}
+
+export async function downloadSessionNotePdf(
+  appointmentId: number
+): Promise<Blob> {
+  const res = await api.get(
+    `/appointments/${appointmentId}/session_note/pdf`,
+    { responseType: "blob" }
+  );
+  return res.data as Blob;
+}

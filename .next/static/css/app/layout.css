@@ -1798,6 +1798,10 @@ body {
   --tw-bg-opacity: 1;
   background-color: rgb(214 233 231 / var(--tw-bg-opacity));
 }
+.hover\:bg-brand-50:hover {
+  --tw-bg-opacity: 1;
+  background-color: rgb(238 246 245 / var(--tw-bg-opacity));
+}
 .hover\:bg-brand-600:hover {
   --tw-bg-opacity: 1;
   background-color: rgb(38 111 104 / var(--tw-bg-opacity));

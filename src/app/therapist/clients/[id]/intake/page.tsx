@@ -11,6 +11,7 @@ import {
   IntakeForm,
   IntakeFormInput,
 } from "@/lib/intakeApi";
+import { downloadIntakeFormPdf } from "@/lib/therapistApi";
 import { isApiError } from "@/lib/apiError";
 import { IntakeFormView } from "@/components/IntakeFormView";
 
@@ -92,6 +93,32 @@ export default function IntakePage() {
     }
   }
 
+  // Phase 15: download a Cerca-branded PDF of this intake. The
+  // backend watermarks the document when it's still a draft, so the
+  // button is enabled in all states — clinical staff often need to
+  // share drafts with supervisors before signing.
+  const [pdfBusy, setPdfBusy] = useState(false);
+  async function onDownloadPdf() {
+    if (!intake) return;
+    setPdfBusy(true);
+    setError(null);
+    try {
+      const blob = await downloadIntakeFormPdf(clientId);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `intake-${clientId}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      setError(isApiError(e) ? e.message : "Could not download PDF.");
+    } finally {
+      setPdfBusy(false);
+    }
+  }
+
   if (!ready || !loaded) {
     return (
       <main className="mx-auto max-w-3xl px-5 py-10">
@@ -109,9 +136,24 @@ export default function IntakePage() {
         ← Back to client
       </a>
 
-      <h1 className="mb-1 mt-4 text-xl font-semibold text-slate-800">
-        Intake form
-      </h1>
+      <div className="mb-1 mt-4 flex items-start justify-between gap-3">
+        <h1 className="text-xl font-semibold text-slate-800">
+          Intake form
+        </h1>
+        <button
+          type="button"
+          onClick={onDownloadPdf}
+          disabled={pdfBusy || !intake}
+          title={
+            !intake
+              ? "Save the form once before downloading."
+              : "Download a Cerca-branded PDF."
+          }
+          className="rounded-xl border border-brand-200 px-3 py-1.5 text-sm font-semibold text-brand-700 transition hover:bg-brand-50 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {pdfBusy ? "Preparing…" : "Download PDF"}
+        </button>
+      </div>
       <p className="mb-6 text-sm text-slate-500">
         One per client — completed at the first session.
       </p>

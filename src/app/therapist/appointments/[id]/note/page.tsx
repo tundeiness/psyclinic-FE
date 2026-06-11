@@ -13,6 +13,7 @@ import {
   SessionNote,
   SessionNoteInput,
 } from "@/lib/sessionNoteApi";
+import { downloadSessionNotePdf } from "@/lib/therapistApi";
 import { isApiError } from "@/lib/apiError";
 import { formatDateTime } from "@/lib/format";
 
@@ -36,7 +37,7 @@ export default function SessionNotePage() {
   const [addressedAndPlan, setAddressedAndPlan] = useState<string>("");
   const [clinicianImpression, setClinicianImpression] = useState<string>("");
 
-  const [busy, setBusy] = useState<"saving" | "signing" | null>(null);
+  const [busy, setBusy] = useState<"saving" | "signing" | "downloading" | null>(null);
   // Transient "saved as draft" acknowledgement. Set to a timestamp on
   // successful save; auto-dismisses after a few seconds. Signed-and-
   // locked uses its own permanent banner.
@@ -126,6 +127,31 @@ export default function SessionNotePage() {
     }
   }
 
+  // Phase 15: download a Cerca-branded PDF of this session note.
+  // The backend watermarks the PDF when the note is still a draft,
+  // so the button is enabled in all states. Available only once the
+  // note exists in the DB — there's nothing to render before that.
+  async function onDownloadPdf() {
+    if (!note) return;
+    setBusy("downloading");
+    setError(null);
+    try {
+      const blob = await downloadSessionNotePdf(appointmentId);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `session-note-${appointmentId}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      setError(isApiError(e) ? e.message : "Could not download PDF.");
+    } finally {
+      setBusy(null);
+    }
+  }
+
   if (!ready || !loaded) {
     return (
       <main className="mx-auto max-w-3xl px-5 py-10">
@@ -148,9 +174,24 @@ export default function SessionNotePage() {
         </Link>
       </div>
 
-      <h1 className="mb-1 text-xl font-semibold text-brand-700 sm:text-2xl">
-        Session note
-      </h1>
+      <div className="mb-1 flex items-start justify-between gap-3">
+        <h1 className="text-xl font-semibold text-brand-700 sm:text-2xl">
+          Session note
+        </h1>
+        <button
+          type="button"
+          onClick={onDownloadPdf}
+          disabled={busy !== null || !note}
+          title={
+            !note
+              ? "Save the note once before downloading."
+              : "Download a Cerca-branded PDF."
+          }
+          className="rounded-xl border border-brand-200 px-3 py-1.5 text-sm font-semibold text-brand-700 transition hover:bg-brand-50 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {busy === "downloading" ? "Preparing…" : "Download PDF"}
+        </button>
+      </div>
       <p className="mb-6 text-sm text-slate-600">
         Document what was reviewed, addressed, and your clinical
         impression. Once signed, the note is read-only.
