@@ -167,6 +167,17 @@ function AppointmentRow({
               clinic&apos;s policy.
             </p>
           )}
+          {a.status === "cancelled" && a.payment?.status === "succeeded" && (
+            // Phase 14 polish: honest financial trail. The client
+            // paid for this session, then cancelled (e.g. as a
+            // precondition to switching therapists). Per the
+            // contract, the fee is non-refundable. Make that
+            // visible rather than letting the row read identical
+            // to a never-paid cancellation.
+            <p className="mt-2 inline-block rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-900 ring-1 ring-amber-200">
+              Paid {formatNaira(a.payment.amount_cents)} · non-refundable
+            </p>
+          )}
           {a.status === "cancelled" && a.cancellation_reason && (
             <p className="mt-2 text-xs text-slate-500">
               Reason: {a.cancellation_reason}

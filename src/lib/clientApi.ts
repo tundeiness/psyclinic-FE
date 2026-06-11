@@ -39,6 +39,11 @@ export interface Appointment {
     id: number;
     provider_reference: string | null;
     amount_cents: number;
+    // Phase 14 polish: present on cancelled appointments where a
+    // payment actually went through. Lets the appointments list
+    // show a "Paid · non-refundable" badge so the financial history
+    // is honest.
+    status?: "pending" | "succeeded" | "failed" | "refunded";
     // v2 Phase 7.1: ISO-string timestamp when this pending payment
     // will be auto-cancelled by the backend's stale-payment sweeper.
     // The frontend countdown component renders the remaining time.
@@ -86,7 +91,8 @@ export interface SessionBlock {
   sessions_used: number;
   sessions_remaining: number;
   payment_mode: "full" | "installment";
-  status: "active" | "completed" | "refunded" | "forfeited";
+  // Phase 13: "expired" added — 6 weeks since last attended session.
+  status: "active" | "completed" | "refunded" | "forfeited" | "expired";
   installment_due: boolean;
   // Up-front payment status. "succeeded" means the block is usable.
   first_payment_status:
@@ -95,6 +101,11 @@ export interface SessionBlock {
     | "failed"
     | "refunded"
     | null;
+  // Phase 13: ISO-string timestamp when the 6-week window closes.
+  // Computed from last_held_at (or first payment if none held yet).
+  expires_at: string | null;
+  expired: boolean;
+  last_held_at: string | null;
 }
 
 export async function fetchSessionBlocks(): Promise<SessionBlock[]> {
@@ -281,4 +292,54 @@ export async function downloadContractPdf(): Promise<Blob> {
     responseType: "blob",
   });
   return res.data as Blob;
+}
+
+// ──────────────────────────────────────────────────────────────────
+// Phase 14: therapist switching
+// ──────────────────────────────────────────────────────────────────
+
+export interface TherapistSwitchPreview {
+  current_therapist: { id: number; full_name: string } | null;
+  new_therapist: { id: number; full_name: string };
+  same_therapist: boolean;
+  forfeited_sessions_count: number;
+  pending_appointments_count: number;
+  can_switch: boolean;
+  block_status: {
+    id: number;
+    sessions_remaining: number;
+    payment_mode: "full" | "installment";
+  } | null;
+}
+
+export async function previewTherapistSwitch(
+  toTherapistProfileId: number
+): Promise<TherapistSwitchPreview> {
+  const res = await api.get("/client/therapist_switches/preview", {
+    params: { to_therapist_profile_id: toTherapistProfileId },
+  });
+  return res.data as TherapistSwitchPreview;
+}
+
+export interface TherapistSwitchResult {
+  assignment: {
+    id: number;
+    from_therapist_id: number | null;
+    to_therapist_id: number;
+    started_at: string;
+    ended_at: string | null;
+    forfeited_block_id: number | null;
+    forfeited_sessions_count: number;
+    reason: string | null;
+  };
+  forfeited_block_id: number | null;
+  forfeited_sessions_count: number;
+}
+
+export async function switchTherapist(input: {
+  to_therapist_profile_id: number;
+  reason?: string;
+}): Promise<TherapistSwitchResult> {
+  const res = await api.post("/client/therapist_switches", input);
+  return res.data as TherapistSwitchResult;
 }

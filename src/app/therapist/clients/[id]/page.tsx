@@ -5,11 +5,14 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { Card, Alert } from "@/components/ui";
 import { useRequireRole } from "@/lib/useRequireRole";
+import { useAppSelector } from "@/store";
 import { fetchClient, TherapistClient } from "@/lib/therapistApi";
 import { isApiError } from "@/lib/apiError";
 
 export default function ClientDetailPage() {
   const { ready } = useRequireRole("therapist");
+  const { user } = useAppSelector((s) => s.auth);
+  const myTpId = user?.therapist_profile?.id ?? null;
   const params = useParams<{ id: string }>();
   const clientId = Number(params.id);
 
@@ -44,6 +47,17 @@ export default function ClientDetailPage() {
     );
   }
 
+  // Phase 14: a "former" client is one whose current_therapist_id no
+  // longer matches mine. They retain in my client list because we
+  // have shared appointments, but EMR access is read-only on records
+  // I authored — and client-authored forms (DASS, WoL) are no longer
+  // accessible to me.
+  const isFormer =
+    client != null &&
+    myTpId != null &&
+    client.current_therapist_id != null &&
+    client.current_therapist_id !== myTpId;
+
   return (
     <main className="mx-auto max-w-3xl px-5 py-8">
       <a href="/therapist/clients" className="text-base font-semibold text-brand-700 no-underline hover:text-brand-800">
@@ -59,9 +73,16 @@ export default function ClientDetailPage() {
       {client && (
         <>
           <Card className="mb-6 mt-4">
-            <h1 className="text-lg font-semibold text-slate-800">
-              {client.user.full_name}
-            </h1>
+            <div className="flex items-start justify-between gap-2">
+              <h1 className="text-lg font-semibold text-slate-800">
+                {client.user.full_name}
+              </h1>
+              {isFormer && (
+                <span className="rounded-full bg-slate-200 px-2 py-0.5 text-xs font-medium text-slate-700">
+                  Former patient
+                </span>
+              )}
+            </div>
             <p className="text-sm text-slate-500">{client.user.email}</p>
             {client.date_of_birth && (
               <p className="mt-1 text-sm text-slate-600">
@@ -69,6 +90,25 @@ export default function ClientDetailPage() {
               </p>
             )}
           </Card>
+
+          {/* Phase 14: when this is a former patient, surface the
+              access policy clearly so therapists know what they
+              can and can't see. */}
+          {isFormer && (
+            <div className="mb-6 animate-in fade-in slide-in-from-top-2 duration-300">
+              <Card className="border border-slate-200 bg-slate-50/70">
+                <p className="text-sm font-semibold text-slate-800">
+                  This is a former patient
+                </p>
+                <p className="mt-1 text-sm text-slate-600">
+                  You can still read records you authored (intake forms,
+                  session notes, service plans). Client-authored forms
+                  (DASS, Wheel of Life) are no longer accessible.
+                  You cannot edit any records.
+                </p>
+              </Card>
+            </div>
+          )}
 
           {/* Phase 12: surface the policy-driven "3 consecutive
               no-shows → review treatment plan" signal. Renders only

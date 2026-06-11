@@ -76,8 +76,13 @@ function BuyBlockPageInner() {
   }, [ready, load]);
 
   // Active block with sessions remaining — purchase is blocked.
+  // Phase 13: an expired block (status="expired" or runtime expired
+  // flag) is functionally dead even if status is still "active"
+  // (sweeper hasn't run yet); we skip those so the client can buy
+  // a replacement.
   const activeBlock = blocks?.find(
-    (b) => b.status === "active" && b.sessions_remaining > 0
+    (b) =>
+      b.status === "active" && b.sessions_remaining > 0 && !b.expired
   );
 
   async function onPurchase(mode: "full" | "installment") {

@@ -6,7 +6,12 @@ export interface PublicTherapist {
   headline: string | null;
   bio: string | null;
   years_experience: number | null;
-  hourly_rate_cents: number;
+  // hourly_rate_cents: deliberately not sent by the public endpoint
+  // anymore (Phase 14 cleanup). Cerca Africa uses uniform clinic
+  // pricing — per-therapist rates would mislead clients. Kept as
+  // optional here for backward compatibility in case the field
+  // resurfaces; the FE renders nothing for it.
+  hourly_rate_cents?: number;
   avatar: { url: string | null; filename: string } | null;
   specializations: { id: number; name: string }[];
 }

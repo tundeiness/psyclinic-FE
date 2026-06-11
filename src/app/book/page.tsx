@@ -2,8 +2,10 @@
 
 import { Suspense, useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { Card, Button, Alert, Field } from "@/components/ui";
 import { useRequireRole } from "@/lib/useRequireRole";
+import { useAppSelector } from "@/store";
 import {
   fetchSlots,
   fetchSessionBlocks,
@@ -32,6 +34,9 @@ export default function BookPage() {
 
 function BookPageInner() {
   const { ready } = useRequireRole("client");
+  const { user } = useAppSelector((s) => s.auth);
+  const currentTherapistId =
+    user?.client_profile?.current_therapist_id ?? null;
   const router = useRouter();
   const search = useSearchParams();
 
@@ -71,19 +76,36 @@ function BookPageInner() {
   const loadSlots = useCallback(async () => {
     if (!blocksLoaded) return;
     setSlots(null);
+    setError(null);  // Clear any stale error from a prior date/action.
     try {
-      // v2: filter slots to the current therapist when normal-session
-      // booking is the mode. fetchSlots accepts a therapist_id filter.
+      // v2: filter slots to the current therapist when one is set.
+      //
+      // Three states a client can be in:
+      //   - No current_therapist_id (pre-assessment): show all
+      //     therapists' slots. Their first booked-and-paid assessment
+      //     binds them to that therapist.
+      //   - current_therapist_id set, no active block: show only that
+      //     therapist's slots. They'll book an assessment with their
+      //     current therapist. To pick a different therapist they must
+      //     use the Switch flow (Phase 14).
+      //   - Active block: show only the block's therapist's slots
+      //     (normal-session mode).
+      //
+      // The activeBlock filter is naturally a subset of the
+      // current_therapist filter, so we just check current_therapist
+      // first.
       const args: { date: string; therapist_profile_id?: number } = { date };
       if (activeBlock) {
         args.therapist_profile_id = activeBlock.therapist_profile_id;
+      } else if (currentTherapistId) {
+        args.therapist_profile_id = currentTherapistId;
       }
       const data = await fetchSlots(args);
       setSlots(data);
     } catch (e) {
       setError(isApiError(e) ? e.message : "Could not load availability.");
     }
-  }, [date, blocksLoaded, activeBlock]);
+  }, [date, blocksLoaded, activeBlock, currentTherapistId]);
 
   useEffect(() => {
     if (ready) loadBlocks();
@@ -154,12 +176,31 @@ function BookPageInner() {
           {activeBlock.sessions_total} sessions remaining in your block.
         </p>
       )}
-      {blocksLoaded && !activeBlock && (
+      {blocksLoaded && !activeBlock && !currentTherapistId && (
         <p className="mb-6 text-sm text-slate-600">
           Pick a date and a therapist. The first session with a new
           therapist is an <strong>assessment session</strong>{" "}
           (charged separately).
         </p>
+      )}
+      {blocksLoaded && !activeBlock && currentTherapistId && (
+        // Phase 14: client has a therapist (assessment paid or seeded)
+        // but no active block yet. They can only book with their
+        // current therapist; to choose someone else they use the
+        // Switch flow. Slots are filtered server-side too.
+        <Card className="mb-6 bg-slate-50 ring-1 ring-slate-200 animate-in fade-in slide-in-from-top-1 duration-300">
+          <p className="text-sm text-slate-700">
+            Showing slots for your current therapist. To book with a
+            different therapist,{" "}
+            <Link
+              href="/therapists"
+              className="font-semibold text-brand-700 underline decoration-brand-200 underline-offset-2 hover:text-brand-800"
+            >
+              switch from the Therapists page
+            </Link>{" "}
+            first.
+          </p>
+        </Card>
       )}
 
       {failed && (

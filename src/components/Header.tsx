@@ -53,6 +53,9 @@ export function Header() {
           >
             Appointments
           </Link>
+          <Link href="/therapists" className="text-slate-600 hover:text-brand-700">
+            Therapists
+          </Link>
           <Link href="/blog" className="text-slate-600 hover:text-brand-700">
             Blog
           </Link>

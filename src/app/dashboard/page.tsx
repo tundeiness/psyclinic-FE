@@ -78,6 +78,7 @@ export default function DashboardPage() {
           <ClientPendingPayments />
           <ClientContractStatusPanel />
           <ClientSessionBlockPanel />
+          <ClientUpNextPanel />
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <Card>
             <p className="text-xs font-medium uppercase tracking-wide text-accent-indigo-600">
@@ -128,6 +129,19 @@ export default function DashboardPage() {
             <Link href="/profile" className="mt-4 inline-block">
               <Button variant="ghost" className="!w-auto">
                 Edit profile
+              </Button>
+            </Link>
+          </Card>
+          <Card>
+            <p className="text-xs font-medium uppercase tracking-wide text-accent-emerald-600">
+              Therapists
+            </p>
+            <p className="mt-2 text-sm text-slate-600">
+              Browse our team or switch to a different therapist.
+            </p>
+            <Link href="/therapists" className="mt-4 inline-block">
+              <Button variant="ghost" className="!w-auto">
+                View team
               </Button>
             </Link>
           </Card>
@@ -398,6 +412,18 @@ function ClientSessionBlockPanel() {
           {active.sessions_total} sessions remaining with{" "}
           {active.therapist_name ?? "your therapist"}.
         </p>
+        {/* Phase 13: 6-week expiry countdown. Same component used for
+            pending-payment expiry in Phase 7.1 — scale="long" switches
+            it to days/weeks. */}
+        {active.expires_at && (
+          <div className="mt-2">
+            <ExpiryCountdown
+              expiresAt={active.expires_at}
+              scale="long"
+              label="Block expires"
+            />
+          </div>
+        )}
         {active.installment_due && (
           <div className="mt-3 rounded-xl bg-amber-100/70 p-3">
             <p className="text-sm font-semibold text-amber-900">
@@ -417,6 +443,57 @@ function ClientSessionBlockPanel() {
             </button>
           </div>
         )}
+        {/* Phase 14: contextual switch entry point. Tiny, low-key —
+            don't encourage switching, but make it findable for the
+            client who wants it. */}
+        <div className="mt-3 text-xs">
+          <Link
+            href="/therapists"
+            className="text-emerald-700/70 underline decoration-emerald-300 underline-offset-2 hover:text-emerald-900"
+          >
+            Considering a different therapist?
+          </Link>
+        </div>
+      </Card>
+    );
+  }
+
+  // Phase 13: if no active block but a recently-expired one, show
+  // the "your block expired" state with a CTA to buy a new one.
+  // Find the most recently-purchased expired block.
+  const mostRecentExpired = blocks
+    .filter((b) => b.status === "expired" || b.expired)
+    .sort(
+      (a, b) =>
+        new Date(b.purchased_at).getTime() -
+        new Date(a.purchased_at).getTime()
+    )[0];
+
+  if (mostRecentExpired) {
+    return (
+      <Card className="mb-4 bg-rose-50/50 ring-1 ring-rose-100 animate-in fade-in slide-in-from-top-1 duration-300">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-rose-800">
+          Your session block has expired
+        </h2>
+        <p className="mt-1 text-sm text-rose-900/80">
+          Per the clinic&apos;s policy, unattended sessions expire 6
+          weeks after your last attended session.
+          {mostRecentExpired.sessions_remaining > 0 && (
+            <>
+              {" "}
+              <strong>{mostRecentExpired.sessions_remaining}</strong>{" "}
+              unused session
+              {mostRecentExpired.sessions_remaining === 1 ? "" : "s"}{" "}
+              were forfeited.
+            </>
+          )}
+        </p>
+        <Link
+          href="/buy-block"
+          className="mt-3 inline-block rounded-xl bg-rose-500 px-3 py-1.5 text-sm font-semibold text-white no-underline transition hover:bg-rose-600"
+        >
+          Purchase a new block →
+        </Link>
       </Card>
     );
   }
@@ -431,6 +508,10 @@ function ClientSessionBlockPanel() {
 // assessment session (they'll be prompted to sign after assessment,
 // not before it).
 function ClientContractStatusPanel() {
+  const { user } = useAppSelector((s) => s.auth);
+  const currentTherapistId =
+    user?.client_profile?.current_therapist_id ?? null;
+
   const [status, setStatus] = useState<ContractStatus | null>(null);
   const [appts, setAppts] = useState<Appointment[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -462,13 +543,28 @@ function ClientContractStatusPanel() {
   if (!status || !appts) return null;
   if (status.signed_contract?.valid_for_use) return null;
 
-  // Only nag clients who have at least one booked or completed
-  // appointment. Before their first booking, asking them to sign a
-  // contract is jumping the gun.
-  const hasBookedOrCompleted = appts.some(
-    (a) => a.status === "booked" || a.status === "completed"
-  );
-  if (!hasBookedOrCompleted) return null;
+  // Show the panel once the client has financially committed to the
+  // clinic in any way. Two durable signals:
+  //   - current_therapist_id is set (paid for an assessment OR went
+  //     through Phase 14 switching)
+  //   - has any appointment that isn't a pure payment failure
+  //     (booked, completed, no_show, OR cancelled — anything paid)
+  //
+  // Earlier this filter only checked booked/completed, which made the
+  // panel blink off when the user cancelled all upcoming appointments
+  // (e.g. as a precondition to switching therapists). Cancelling is
+  // not "I'm no longer with the clinic" — they still owe their unpaid
+  // contract obligation.
+  const hasAnyCommitment =
+    currentTherapistId !== null ||
+    appts.some(
+      (a) =>
+        a.status === "booked" ||
+        a.status === "completed" ||
+        a.status === "no_show" ||
+        a.status === "cancelled"
+    );
+  if (!hasAnyCommitment) return null;
 
   if (status.pending_contract) {
     return (
@@ -503,3 +599,215 @@ function ClientContractStatusPanel() {
     </Card>
   );
 }
+
+// Phase 14 polish: an "Up next" panel that detects the client's state
+// and surfaces the single next concrete step. Without this, clients
+// landing on the dashboard after a switch (or any cold-start state)
+// see four generic nav tiles but no breadcrumb. With it, they always
+// know what to click.
+//
+// The panel renders nothing when the client is in a "stable" state —
+// active block, or a recently expired block (those have their own
+// dedicated panels). It only fills the gap states.
+//
+// State precedence (we surface the FIRST matching one):
+//   1. No current_therapist_id → "Choose a therapist"
+//   2. Contract not signed → handled by ClientContractStatusPanel; we skip
+//   3. Pending-payment assessment → "Complete your assessment payment"
+//      (also handled by ClientPendingPayments; we skip if so)
+//   4. Booked assessment in the future → "Your assessment is scheduled"
+//   5. No assessment booked yet with current therapist → "Book your
+//      assessment session with X"
+//   6. Assessment completed, no active block → "Purchase a block"
+//   7. Otherwise (active block or expired-block panels are showing) →
+//      render nothing.
+function ClientUpNextPanel() {
+  const { user } = useAppSelector((s) => s.auth);
+  const currentTherapistId =
+    user?.client_profile?.current_therapist_id ?? null;
+
+  const [appts, setAppts] = useState<Appointment[] | null>(null);
+  const [blocks, setBlocks] = useState<SessionBlock[] | null>(null);
+  const [contract, setContract] = useState<ContractStatus | null>(null);
+
+  const load = useCallback(async () => {
+    try {
+      const [a, b, c] = await Promise.all([
+        fetchAppointments(),
+        fetchSessionBlocks(),
+        fetchContractStatus(),
+      ]);
+      setAppts(a);
+      setBlocks(b);
+      setContract(c);
+    } catch {
+      // Silent: this is decorative guidance, not a critical surface.
+      // The other panels handle their own errors.
+    }
+  }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  if (!appts || !blocks || !contract) return null;
+
+  // Bail if there's an active or expired block — those already have
+  // dedicated dashboard panels that explain next steps.
+  const hasActiveBlock = blocks.some(
+    (b) =>
+      b.status === "active" &&
+      b.sessions_remaining > 0 &&
+      b.first_payment_status === "succeeded" &&
+      !b.expired
+  );
+  const hasRecentlyExpiredBlock = blocks.some(
+    (b) => b.status === "expired" || b.expired
+  );
+  if (hasActiveBlock || hasRecentlyExpiredBlock) return null;
+
+  // Bail if contract panel is going to handle the messaging (i.e.
+  // they have ANY commitment AND haven't signed). Same trigger logic
+  // as ClientContractStatusPanel for consistency.
+  const hasAnyCommitment =
+    currentTherapistId !== null ||
+    appts.some(
+      (a) =>
+        a.status === "booked" ||
+        a.status === "completed" ||
+        a.status === "no_show" ||
+        a.status === "cancelled"
+    );
+  const contractSigned = contract.signed_contract?.valid_for_use === true;
+  if (hasAnyCommitment && !contractSigned) return null;
+
+  // Bail if ClientPendingPayments is going to nudge for an unpaid
+  // assessment — overlapping prompts would be noise.
+  const hasPendingPayment = appts.some((a) => a.status === "pending_payment");
+  if (hasPendingPayment) return null;
+
+  // ── State #1: no current therapist
+  if (!currentTherapistId) {
+    return (
+      <Card className="mb-4 bg-brand-50/60 ring-1 ring-brand-100 animate-in fade-in slide-in-from-top-1 duration-300">
+        <p className="text-xs font-semibold uppercase tracking-wide text-brand-700">
+          Up next
+        </p>
+        <h2 className="mt-1 text-base font-semibold text-slate-800">
+          Choose a therapist to begin
+        </h2>
+        <p className="mt-1 text-sm text-slate-600">
+          Browse our team and pick the therapist you&apos;d like to work
+          with. Your first session will be an assessment.
+        </p>
+        <Link
+          href="/therapists"
+          className="mt-3 inline-block rounded-xl bg-brand-600 px-3 py-1.5 text-sm font-semibold text-white no-underline transition hover:bg-brand-700"
+        >
+          View team →
+        </Link>
+      </Card>
+    );
+  }
+
+  // ── States 4, 5, 6: client has a therapist + signed contract.
+  // Distinguish by their appointment history WITH THAT THERAPIST.
+  const withCurrent = appts.filter(
+    (a) => a.therapist.id === currentTherapistId
+  );
+
+  const futureBookedAssessment = withCurrent.find(
+    (a) =>
+      a.status === "booked" &&
+      a.session_kind === "assessment" &&
+      new Date(a.slot.starts_at).getTime() > Date.now()
+  );
+  const hasCompletedAssessment = withCurrent.some(
+    (a) => a.session_kind === "assessment" && a.status === "completed"
+  );
+
+  // ── State #4: assessment is booked and upcoming
+  if (futureBookedAssessment) {
+    const when = new Date(
+      futureBookedAssessment.slot.starts_at
+    ).toLocaleString(undefined, {
+      weekday: "short",
+      day: "numeric",
+      month: "short",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+    return (
+      <Card className="mb-4 bg-emerald-50/60 ring-1 ring-emerald-100 animate-in fade-in slide-in-from-top-1 duration-300">
+        <p className="text-xs font-semibold uppercase tracking-wide text-emerald-700">
+          Up next
+        </p>
+        <h2 className="mt-1 text-base font-semibold text-slate-800">
+          Your assessment is scheduled
+        </h2>
+        <p className="mt-1 text-sm text-slate-700">
+          {when} with{" "}
+          <strong>{futureBookedAssessment.therapist.name}</strong>. After
+          the assessment you&apos;ll be able to purchase a 6-session block.
+        </p>
+        <Link
+          href="/appointments"
+          className="mt-3 inline-block rounded-xl border border-emerald-200 px-3 py-1.5 text-sm font-semibold text-emerald-800 no-underline transition hover:bg-emerald-100"
+        >
+          View appointments →
+        </Link>
+      </Card>
+    );
+  }
+
+  // ── State #6: assessment completed, no active block — buy one
+  if (hasCompletedAssessment) {
+    return (
+      <Card className="mb-4 bg-accent-violet-50 ring-1 ring-accent-violet-500/20 animate-in fade-in slide-in-from-top-1 duration-300">
+        <p className="text-xs font-semibold uppercase tracking-wide text-accent-violet-600">
+          Up next
+        </p>
+        <h2 className="mt-1 text-base font-semibold text-slate-800">
+          Purchase your session block
+        </h2>
+        <p className="mt-1 text-sm text-slate-600">
+          Your assessment is complete. Buy a 6-session block to continue
+          therapy.
+        </p>
+        <Link
+          href="/buy-block"
+          className="mt-3 inline-block rounded-xl bg-accent-violet-500 px-3 py-1.5 text-sm font-semibold text-white no-underline transition hover:bg-accent-violet-600"
+        >
+          Buy a block →
+        </Link>
+      </Card>
+    );
+  }
+
+  // ── State #5: has a current therapist, no assessment booked yet
+  // (this is the common state immediately after a Phase 14 switch).
+  // Note: we don't have the therapist's name from current_therapist_id
+  // alone — but we can synthesize "your current therapist" since the
+  // /therapists page surfaces their identity directly.
+  return (
+    <Card className="mb-4 bg-brand-50/60 ring-1 ring-brand-100 animate-in fade-in slide-in-from-top-1 duration-300">
+      <p className="text-xs font-semibold uppercase tracking-wide text-brand-700">
+        Up next
+      </p>
+      <h2 className="mt-1 text-base font-semibold text-slate-800">
+        Book your assessment session
+      </h2>
+      <p className="mt-1 text-sm text-slate-600">
+        Your first session with your current therapist is an assessment
+        (&#x20A6;50,000). After that, you can purchase a 6-session block.
+      </p>
+      <Link
+        href="/book"
+        className="mt-3 inline-block rounded-xl bg-brand-600 px-3 py-1.5 text-sm font-semibold text-white no-underline transition hover:bg-brand-700"
+      >
+        Go to booking →
+      </Link>
+    </Card>
+  );
+}
+

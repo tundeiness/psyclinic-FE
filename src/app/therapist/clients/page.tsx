@@ -4,11 +4,14 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Card, Alert, LoadingState } from "@/components/ui";
 import { useRequireRole } from "@/lib/useRequireRole";
+import { useAppSelector } from "@/store";
 import { fetchMyClients, TherapistClient } from "@/lib/therapistApi";
 import { isApiError } from "@/lib/apiError";
 
 export default function TherapistClientsPage() {
   const { ready } = useRequireRole("therapist");
+  const { user } = useAppSelector((s) => s.auth);
+  const myTpId = user?.therapist_profile?.id ?? null;
   const [clients, setClients] = useState<TherapistClient[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -35,7 +38,8 @@ export default function TherapistClientsPage() {
         My clients
       </h1>
       <p className="mb-6 text-sm text-slate-600">
-        Clients who have booked an appointment with you.
+        Clients who have booked an appointment with you. Former patients
+        remain in this list so you can review records you authored.
       </p>
 
       {error && <Alert kind="error">{error}</Alert>}
@@ -48,19 +52,36 @@ export default function TherapistClientsPage() {
       )}
 
       <div className="space-y-3">
-        {clients?.map((c) => (
-          <Link key={c.id} href={`/therapist/clients/${c.id}`}>
-            <Card className="transition hover:ring-2 hover:ring-brand-100">
-              <p className="font-medium text-slate-800">
-                {c.user.full_name}
-              </p>
-              <p className="text-sm text-slate-500">{c.user.email}</p>
-              <p className="mt-1 text-xs text-brand-600">
-                View profile &amp; notes →
-              </p>
-            </Card>
-          </Link>
-        ))}
+        {clients?.map((c) => {
+          // Phase 14: highlight former patients so the therapist
+          // knows their EMR access is read-only on this client.
+          const isFormer =
+            myTpId != null &&
+            c.current_therapist_id != null &&
+            c.current_therapist_id !== myTpId;
+          return (
+            <Link key={c.id} href={`/therapist/clients/${c.id}`}>
+              <Card className="transition hover:ring-2 hover:ring-brand-100">
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <p className="font-medium text-slate-800">
+                      {c.user.full_name}
+                    </p>
+                    <p className="text-sm text-slate-500">{c.user.email}</p>
+                  </div>
+                  {isFormer && (
+                    <span className="rounded-full bg-slate-200 px-2 py-0.5 text-xs font-medium text-slate-700">
+                      Former
+                    </span>
+                  )}
+                </div>
+                <p className="mt-1 text-xs text-brand-600">
+                  View profile &amp; notes →
+                </p>
+              </Card>
+            </Link>
+          );
+        })}
       </div>
     </main>
   );

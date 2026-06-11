@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/store";
 import { logout } from "@/store/authSlice";
 
@@ -18,6 +19,7 @@ function initials(name: string): string {
 // close, role-aware menu items.
 export function UserMenu() {
   const dispatch = useAppDispatch();
+  const router = useRouter();
   const user = useAppSelector((s) => s.auth.user);
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -138,6 +140,11 @@ export function UserMenu() {
               onClick={() => {
                 setOpen(false);
                 dispatch(logout());
+                // Public pages like /therapists don't gate on auth,
+                // so a logout from there would leave the user
+                // stranded on the same page in its logged-out form.
+                // Explicit navigation gives a clean ending state.
+                router.push("/login");
               }}
               className="block w-full px-5 py-2.5 text-left text-sm font-medium text-red-600 transition hover:bg-red-50"
             >

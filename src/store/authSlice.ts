@@ -20,6 +20,14 @@ export interface User {
     id: number;
     co_admin: boolean;
   };
+  // Only present when role === "client". Phase 14: current_therapist_id
+  // lets the therapists-directory page know which therapist (if any)
+  // is the client's current — so it can show "Current" vs "Switch to"
+  // buttons appropriately.
+  client_profile?: {
+    id: number;
+    current_therapist_id: number | null;
+  };
 }
 
 // True if the user can see/use the admin workspace. Admins always can.

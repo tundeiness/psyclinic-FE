@@ -13,6 +13,10 @@ export interface TherapistClient {
   // to a review of therapy or coaching goals").
   consecutive_no_shows?: number;
   treatment_review_recommended?: boolean;
+  // Phase 14: who is the client's CURRENT therapist. The therapist
+  // page compares this to its own id to know whether this is "their"
+  // client or a former patient.
+  current_therapist_id?: number | null;
 }
 
 // ---- availability ----
