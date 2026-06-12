@@ -15,9 +15,11 @@ import {
 } from "@/lib/therapistApi";
 import { isApiError } from "@/lib/apiError";
 import { formatDateTime, statusLabel, ymd } from "@/lib/format";
+import { useToast } from "@/lib/useToast";
 
 export default function TherapistSchedulePage() {
   const { ready } = useRequireRole("therapist");
+  const toast = useToast();
 
   const [slots, setSlots] = useState<Slot[] | null>(null);
   const [appts, setAppts] = useState<Appointment[] | null>(null);
@@ -56,12 +58,13 @@ export default function TherapistSchedulePage() {
         ends_at: new Date(`${date}T${end}`).toISOString(),
       });
       await load();
+      toast.success("Slot added");
     } catch (err) {
-      setError(
-        isApiError(err)
-          ? err.details?.join(", ") || err.message
-          : "Could not create slot."
-      );
+      const msg = isApiError(err)
+        ? err.details?.join(", ") || err.message
+        : "Could not create slot.";
+      setError(msg);
+      toast.error(msg);
     } finally {
       setBusy(false);
     }
@@ -73,8 +76,11 @@ export default function TherapistSchedulePage() {
     try {
       await deleteSlot(id);
       await load();
+      toast.success("Slot removed");
     } catch (err) {
-      setError(isApiError(err) ? err.message : "Could not delete slot.");
+      const msg = isApiError(err) ? err.message : "Could not delete slot.";
+      setError(msg);
+      toast.error(msg);
     } finally {
       setBusy(false);
     }
@@ -86,8 +92,11 @@ export default function TherapistSchedulePage() {
     try {
       await updateAppointmentStatus(id, status);
       await load();
+      toast.success(status === "completed" ? "Marked completed" : "Cancelled");
     } catch (err) {
-      setError(isApiError(err) ? err.message : "Could not update.");
+      const msg = isApiError(err) ? err.message : "Could not update.";
+      setError(msg);
+      toast.error(msg);
     } finally {
       setBusy(false);
     }

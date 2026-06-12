@@ -13,6 +13,7 @@ import {
 } from "@/lib/servicePlanNoteApi";
 import { downloadServicePlanNotePdf } from "@/lib/therapistApi";
 import { isApiError } from "@/lib/apiError";
+import { useToast } from "@/lib/useToast";
 
 // Phase 16: service plan note — treatment-planning record written at
 // session 2. One per client globally. Same pattern as the intake
@@ -39,6 +40,7 @@ export default function ServicePlanNotePage() {
     null
   );
   const [error, setError] = useState<string | null>(null);
+  const toast = useToast();
 
   // Form state — one entry per backend field.
   const [form, setForm] = useState<ServicePlanNoteInput>({
@@ -107,8 +109,11 @@ export default function ServicePlanNotePage() {
         : await createServicePlanNote(clientId, form);
       setNote(r);
       hydrateForm(r);
+      toast.success("Draft saved");
     } catch (e) {
-      setError(isApiError(e) ? e.message : "Could not save the service plan note.");
+      const msg = isApiError(e) ? e.message : "Could not save the service plan note.";
+      setError(msg);
+      toast.error(msg);
     } finally {
       setBusy(null);
     }
@@ -128,8 +133,11 @@ export default function ServicePlanNotePage() {
       setNote(signed);
       hydrateForm(signed);
       void target; // referenced for clarity; not needed downstream
+      toast.success("Service plan signed and locked");
     } catch (e) {
-      setError(isApiError(e) ? e.message : "Could not sign the service plan note.");
+      const msg = isApiError(e) ? e.message : "Could not sign the service plan note.";
+      setError(msg);
+      toast.error(msg);
     } finally {
       setBusy(null);
     }
@@ -149,8 +157,11 @@ export default function ServicePlanNotePage() {
       a.click();
       a.remove();
       URL.revokeObjectURL(url);
+      toast.success("PDF downloaded");
     } catch (e) {
-      setError(isApiError(e) ? e.message : "Could not download PDF.");
+      const msg = isApiError(e) ? e.message : "Could not download PDF.";
+      setError(msg);
+      toast.error(msg);
     } finally {
       setBusy(null);
     }

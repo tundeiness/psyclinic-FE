@@ -14,6 +14,7 @@ import {
 import { downloadIntakeFormPdf } from "@/lib/therapistApi";
 import { isApiError } from "@/lib/apiError";
 import { IntakeFormView } from "@/components/IntakeFormView";
+import { useToast } from "@/lib/useToast";
 
 export default function IntakePage() {
   // Therapists and admins both reach this page; the backend authorizes.
@@ -38,6 +39,7 @@ export default function IntakePage() {
   const [loaded, setLoaded] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const toast = useToast();
 
   const load = useCallback(async () => {
     setError(null);
@@ -69,12 +71,13 @@ export default function IntakePage() {
         ? await updateIntakeForm(clientId, input)
         : await createIntakeForm(clientId, input);
       setIntake(r);
+      toast.success("Draft saved");
     } catch (e) {
-      setError(
-        isApiError(e)
-          ? e.details?.join(", ") || e.message
-          : "Could not save the intake form."
-      );
+      const msg = isApiError(e)
+        ? e.details?.join(", ") || e.message
+        : "Could not save the intake form.";
+      setError(msg);
+      toast.error(msg);
     } finally {
       setBusy(false);
     }
@@ -86,8 +89,11 @@ export default function IntakePage() {
     try {
       const r = await signIntakeForm(clientId);
       setIntake(r);
+      toast.success("Intake form signed and locked");
     } catch (e) {
-      setError(isApiError(e) ? e.message : "Could not sign the intake form.");
+      const msg = isApiError(e) ? e.message : "Could not sign the intake form.";
+      setError(msg);
+      toast.error(msg);
     } finally {
       setBusy(false);
     }
@@ -112,8 +118,11 @@ export default function IntakePage() {
       a.click();
       a.remove();
       URL.revokeObjectURL(url);
+      toast.success("PDF downloaded");
     } catch (e) {
-      setError(isApiError(e) ? e.message : "Could not download PDF.");
+      const msg = isApiError(e) ? e.message : "Could not download PDF.";
+      setError(msg);
+      toast.error(msg);
     } finally {
       setPdfBusy(false);
     }

@@ -3,6 +3,7 @@ import "./globals.css";
 import { Providers } from "./providers";
 import { Header } from "@/components/Header";
 import { AuthBootstrap } from "@/components/AuthBootstrap";
+import { ToastContainer } from "@/components/ToastContainer";
 
 export const metadata: Metadata = {
   title: "Cerca Africa Mind & Behaviour Clinic",
@@ -43,6 +44,7 @@ export default function RootLayout({
           <AuthBootstrap />
           <Header />
           {children}
+          <ToastContainer />
         </Providers>
       </body>
     </html>

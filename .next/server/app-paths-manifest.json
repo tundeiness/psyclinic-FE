@@ -1,6 +1,8 @@
 {
-  "/therapist/clients/page": "app/therapist/clients/page.js",
-  "/therapist/clients/[id]/service_plan_note/page": "app/therapist/clients/[id]/service_plan_note/page.js",
+  "/therapist/page": "app/therapist/page.js",
   "/dashboard/page": "app/dashboard/page.js",
-  "/therapist/clients/[id]/page": "app/therapist/clients/[id]/page.js"
+  "/therapist/clients/page": "app/therapist/clients/page.js",
+  "/therapist/clients/[id]/page": "app/therapist/clients/[id]/page.js",
+  "/login/page": "app/login/page.js",
+  "/therapist/clients/[id]/service_plan_note/page": "app/therapist/clients/[id]/service_plan_note/page.js"
 }

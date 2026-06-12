@@ -15,6 +15,7 @@ import {
 } from "@/lib/sessionNoteApi";
 import { downloadSessionNotePdf } from "@/lib/therapistApi";
 import { isApiError } from "@/lib/apiError";
+import { useToast } from "@/lib/useToast";
 import { formatDateTime } from "@/lib/format";
 
 export default function SessionNotePage() {
@@ -38,6 +39,7 @@ export default function SessionNotePage() {
   const [clinicianImpression, setClinicianImpression] = useState<string>("");
 
   const [busy, setBusy] = useState<"saving" | "signing" | "downloading" | null>(null);
+  const toast = useToast();
   // Transient "saved as draft" acknowledgement. Set to a timestamp on
   // successful save; auto-dismisses after a few seconds. Signed-and-
   // locked uses its own permanent banner.
@@ -98,8 +100,11 @@ export default function SessionNotePage() {
       setNote(saved);
       fillForm(saved);
       setSavedAt(Date.now());
+      toast.success("Draft saved");
     } catch (e) {
-      setError(isApiError(e) ? e.message : "Could not save the note.");
+      const msg = isApiError(e) ? e.message : "Could not save the note.";
+      setError(msg);
+      toast.error(msg);
     } finally {
       setBusy(null);
     }
@@ -120,8 +125,12 @@ export default function SessionNotePage() {
       const signed = await signSessionNote(appointmentId);
       setNote(signed);
       fillForm(signed);
+      void target;
+      toast.success("Session note signed and locked");
     } catch (e) {
-      setError(isApiError(e) ? e.message : "Could not sign the note.");
+      const msg = isApiError(e) ? e.message : "Could not sign the note.";
+      setError(msg);
+      toast.error(msg);
     } finally {
       setBusy(null);
     }
@@ -145,8 +154,11 @@ export default function SessionNotePage() {
       a.click();
       a.remove();
       URL.revokeObjectURL(url);
+      toast.success("PDF downloaded");
     } catch (e) {
-      setError(isApiError(e) ? e.message : "Could not download PDF.");
+      const msg = isApiError(e) ? e.message : "Could not download PDF.";
+      setError(msg);
+      toast.error(msg);
     } finally {
       setBusy(null);
     }

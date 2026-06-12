@@ -12,6 +12,7 @@ import {
 import { isApiError } from "@/lib/apiError";
 import { formatDateTime, formatNaira, statusLabel } from "@/lib/format";
 import { ExpiryCountdown } from "@/components/ExpiryCountdown";
+import { useToast } from "@/lib/useToast";
 
 const STATUS_STYLES: Record<string, string> = {
   booked: "bg-green-50 text-green-700",
@@ -112,6 +113,7 @@ function AppointmentRow({
   const [busy, setBusy] = useState(false);
   const [showReason, setShowReason] = useState(false);
   const [reason, setReason] = useState("");
+  const toast = useToast();
 
   const cancellable =
     a.status === "booked" || a.status === "pending_payment";
@@ -129,8 +131,11 @@ function AppointmentRow({
     try {
       await cancelAppointment(a.id, reason.trim() || undefined);
       await onCancelled();
+      toast.success("Appointment cancelled");
     } catch (e) {
-      onError(isApiError(e) ? e.message : "Could not cancel.");
+      const msg = isApiError(e) ? e.message : "Could not cancel.";
+      onError(msg);
+      toast.error(msg);
     } finally {
       setBusy(false);
     }
