@@ -106,3 +106,54 @@ export async function downloadServicePlanNotePdf(
   );
   return res.data as Blob;
 }
+
+// Phase 17.4: therapist read access to a client's DASS-42 history.
+// Drafts are hidden by the backend — only signed assessments come back.
+// The therapist serialization includes raw numeric scores (the client
+// view excludes them per Q7).
+
+export interface TherapistDassAssessment {
+  id: number;
+  client_profile_id: number;
+  assessment_date: string;
+  signed: boolean;
+  signed_at: string | null;
+  author_name: string | null;
+  depression_score: number | null;
+  anxiety_score: number | null;
+  stress_score: number | null;
+  depression_severity: string | null;
+  anxiety_severity: string | null;
+  stress_severity: string | null;
+  [key: `item_${number}`]: number | null;
+}
+
+export async function listClientDassAssessments(
+  clientId: number
+): Promise<TherapistDassAssessment[]> {
+  const res = await api.get(
+    `/therapist/clients/${clientId}/dass_assessments`
+  );
+  return res.data.dass_assessments as TherapistDassAssessment[];
+}
+
+export async function fetchClientDassAssessment(
+  clientId: number,
+  assessmentId: number
+): Promise<TherapistDassAssessment> {
+  const res = await api.get(
+    `/therapist/clients/${clientId}/dass_assessments/${assessmentId}`
+  );
+  return res.data.dass_assessment as TherapistDassAssessment;
+}
+
+export async function downloadDassPdf(
+  clientId: number,
+  assessmentId: number
+): Promise<Blob> {
+  const res = await api.get(
+    `/therapist/clients/${clientId}/dass_assessments/${assessmentId}/pdf`,
+    { responseType: "blob" }
+  );
+  return res.data as Blob;
+}
