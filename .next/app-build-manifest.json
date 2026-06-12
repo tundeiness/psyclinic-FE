@@ -1,9 +1,9 @@
 {
   "pages": {
-    "/therapist/page": [
+    "/dashboard/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/therapist/page.js"
+      "static/chunks/app/dashboard/page.js"
     ],
     "/layout": [
       "static/chunks/webpack.js",
@@ -21,25 +21,15 @@
       "static/chunks/main-app.js",
       "static/chunks/app/login/page.js"
     ],
-    "/dashboard/page": [
+    "/dass/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/dashboard/page.js"
+      "static/chunks/app/dass/page.js"
     ],
-    "/therapist/clients/page": [
+    "/dass/[id]/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/therapist/clients/page.js"
-    ],
-    "/therapist/clients/[id]/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/therapist/clients/[id]/page.js"
-    ],
-    "/therapist/clients/[id]/service_plan_note/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/therapist/clients/[id]/service_plan_note/page.js"
+      "static/chunks/app/dass/[id]/page.js"
     ]
   }
 }
