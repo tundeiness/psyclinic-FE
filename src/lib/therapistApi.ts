@@ -96,3 +96,13 @@ export async function downloadSessionNotePdf(
   );
   return res.data as Blob;
 }
+
+export async function downloadServicePlanNotePdf(
+  clientId: number
+): Promise<Blob> {
+  const res = await api.get(
+    `/clients/${clientId}/service_plan_note/pdf`,
+    { responseType: "blob" }
+  );
+  return res.data as Blob;
+}

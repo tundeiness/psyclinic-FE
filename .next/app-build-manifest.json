@@ -1,9 +1,9 @@
 {
   "pages": {
-    "/dashboard/page": [
+    "/login/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/dashboard/page.js"
+      "static/chunks/app/login/page.js"
     ],
     "/layout": [
       "static/chunks/webpack.js",
@@ -16,6 +16,11 @@
       "static/chunks/main-app.js",
       "static/chunks/app/not-found.js"
     ],
+    "/dashboard/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/dashboard/page.js"
+    ],
     "/therapist/clients/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
@@ -26,55 +31,10 @@
       "static/chunks/main-app.js",
       "static/chunks/app/therapist/clients/[id]/page.js"
     ],
-    "/therapist/clients/[id]/intake/page": [
+    "/therapist/clients/[id]/service_plan_note/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/therapist/clients/[id]/intake/page.js"
-    ],
-    "/therapist/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/therapist/page.js"
-    ],
-    "/therapist/clients/[id]/session_notes/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/therapist/clients/[id]/session_notes/page.js"
-    ],
-    "/login/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/login/page.js"
-    ],
-    "/contract/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/contract/page.js"
-    ],
-    "/book/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/book/page.js"
-    ],
-    "/checkout/[intent]/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/checkout/[intent]/page.js"
-    ],
-    "/booking/confirmed/[id]/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/booking/confirmed/[id]/page.js"
-    ],
-    "/appointments/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/appointments/page.js"
-    ],
-    "/therapists/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/therapists/page.js"
+      "static/chunks/app/therapist/clients/[id]/service_plan_note/page.js"
     ]
   }
 }

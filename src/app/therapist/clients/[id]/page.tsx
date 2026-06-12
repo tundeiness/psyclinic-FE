@@ -169,18 +169,21 @@ export default function ClientDetailPage() {
                 </Link>
               </li>
 
-              {/* Phases 9-10 will fill these in; visible as disabled rows
-                  so therapists know what's coming. */}
-              <li className="flex items-center justify-between py-3 opacity-60">
+              {/* Phase 16: now wired. DASS-42 and Wheel of Life
+                  remain "Coming soon" until Phases 17 and 18. */}
+              <li className="flex items-center justify-between py-3">
                 <div>
                   <p className="text-sm font-medium text-slate-800">Service plan note</p>
                   <p className="text-xs text-slate-500">
-                    Second session — treatment-planning record. Coming soon.
+                    Second session — treatment-planning record.
                   </p>
                 </div>
-                <span className="rounded-xl bg-slate-100 px-3 py-1.5 text-xs text-slate-500">
-                  Soon
-                </span>
+                <Link
+                  href={`/therapist/clients/${clientId}/service_plan_note`}
+                  className="rounded-xl bg-brand-50 px-3 py-1.5 text-xs font-semibold text-brand-700 no-underline transition hover:bg-brand-100"
+                >
+                  Open →
+                </Link>
               </li>
               <li className="flex items-center justify-between py-3 opacity-60">
                 <div>
