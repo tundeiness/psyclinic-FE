@@ -775,6 +775,9 @@ video {
 .w-64 {
   width: 16rem;
 }
+.w-8 {
+  width: 2rem;
+}
 .w-auto {
   width: auto;
 }
@@ -1427,6 +1430,9 @@ video {
   font-size: 1.875rem;
   line-height: 2.25rem;
 }
+.text-\[10px\] {
+  font-size: 10px;
+}
 .text-base {
   font-size: 1rem;
   line-height: 1.5rem;
@@ -1654,6 +1660,9 @@ video {
 }
 .opacity-70 {
   opacity: 0.7;
+}
+.opacity-80 {
+  opacity: 0.8;
 }
 .shadow {
   --tw-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);

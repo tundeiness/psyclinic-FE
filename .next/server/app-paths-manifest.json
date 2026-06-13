@@ -1,6 +1,8 @@
 {
-  "/dass/[id]/page": "app/dass/[id]/page.js",
   "/dashboard/page": "app/dashboard/page.js",
-  "/login/page": "app/login/page.js",
-  "/dass/page": "app/dass/page.js"
+  "/therapist/clients/[id]/dass/page": "app/therapist/clients/[id]/dass/page.js",
+  "/therapist/clients/[id]/dass/[assessmentId]/page": "app/therapist/clients/[id]/dass/[assessmentId]/page.js",
+  "/therapist/clients/page": "app/therapist/clients/page.js",
+  "/therapist/clients/[id]/page": "app/therapist/clients/[id]/page.js",
+  "/therapist/page": "app/therapist/page.js"
 }

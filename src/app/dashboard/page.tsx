@@ -159,6 +159,19 @@ export default function DashboardPage() {
               </Button>
             </Link>
           </Card>
+          <Card>
+            <p className="text-xs font-medium uppercase tracking-wide text-accent-violet-600">
+              Wheel of Life
+            </p>
+            <p className="mt-2 text-sm text-slate-600">
+              Reflect on 9 life areas. 10-15 minutes.
+            </p>
+            <Link href="/wheel-of-life" className="mt-4 inline-block">
+              <Button variant="ghost" className="!w-auto">
+                Open
+              </Button>
+            </Link>
+          </Card>
           </div>
         </>
       )}

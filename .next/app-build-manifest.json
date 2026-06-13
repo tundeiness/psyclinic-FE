@@ -1,9 +1,14 @@
 {
   "pages": {
-    "/dashboard/page": [
+    "/not-found": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/dashboard/page.js"
+      "static/chunks/app/not-found.js"
+    ],
+    "/_not-found/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/_not-found/page.js"
     ],
     "/layout": [
       "static/chunks/webpack.js",
@@ -11,25 +16,35 @@
       "static/css/app/layout.css",
       "static/chunks/app/layout.js"
     ],
-    "/not-found": [
+    "/dashboard/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/not-found.js"
+      "static/chunks/app/dashboard/page.js"
     ],
-    "/login/page": [
+    "/therapist/clients/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/login/page.js"
+      "static/chunks/app/therapist/clients/page.js"
     ],
-    "/dass/page": [
+    "/therapist/clients/[id]/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/dass/page.js"
+      "static/chunks/app/therapist/clients/[id]/page.js"
     ],
-    "/dass/[id]/page": [
+    "/therapist/clients/[id]/dass/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/dass/[id]/page.js"
+      "static/chunks/app/therapist/clients/[id]/dass/page.js"
+    ],
+    "/therapist/clients/[id]/dass/[assessmentId]/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/therapist/clients/[id]/dass/[assessmentId]/page.js"
+    ],
+    "/therapist/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/therapist/page.js"
     ]
   }
 }
