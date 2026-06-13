@@ -157,3 +157,54 @@ export async function downloadDassPdf(
   );
   return res.data as Blob;
 }
+
+// Phase 18.3: therapist read access to a client's Wheel of Life
+// history. Drafts are hidden by the backend — only submitted
+// assessments come back. The therapist sees full detail including
+// scores, totals, percentages, and reflection answers.
+
+export interface TherapistWolAssessment {
+  id: number;
+  client_profile_id: number;
+  author_id: number;
+  assessment_date: string;
+  signed: boolean;
+  signed_at: string | null;
+  author_name: string | null;
+  scores: Record<string, (number | null)[]>;
+  totals: Record<string, { total: number; max: number; percentage: number }>;
+  focus_area: string | null;
+  current_state: string | null;
+  whats_missing: string | null;
+  what_to_create: string | null;
+}
+
+export async function listClientWheelOfLifeAssessments(
+  clientId: number
+): Promise<TherapistWolAssessment[]> {
+  const res = await api.get(
+    `/therapist/clients/${clientId}/wheel_of_life_assessments`
+  );
+  return res.data.wheel_of_life_assessments as TherapistWolAssessment[];
+}
+
+export async function fetchClientWheelOfLifeAssessment(
+  clientId: number,
+  assessmentId: number
+): Promise<TherapistWolAssessment> {
+  const res = await api.get(
+    `/therapist/clients/${clientId}/wheel_of_life_assessments/${assessmentId}`
+  );
+  return res.data.wheel_of_life_assessment as TherapistWolAssessment;
+}
+
+export async function downloadWheelOfLifePdf(
+  clientId: number,
+  assessmentId: number
+): Promise<Blob> {
+  const res = await api.get(
+    `/therapist/clients/${clientId}/wheel_of_life_assessments/${assessmentId}/pdf`,
+    { responseType: "blob" }
+  );
+  return res.data as Blob;
+}
