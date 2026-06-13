@@ -19,7 +19,7 @@ import { useToast } from "@/lib/useToast";
 // assessment. Shows the radial chart, per-area scores+items, the
 // client's reflection answers, and a Download PDF button.
 export default function TherapistWolDetailPage() {
-  const { ready } = useRequireRole("therapist");
+  const { ready } = useRequireRole(["therapist", "admin"]);
   const toast = useToast();
   const params = useParams<{ id: string; assessmentId: string }>();
   const clientId = Number(params.id);

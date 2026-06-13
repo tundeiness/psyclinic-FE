@@ -25,7 +25,7 @@ type RowState = {
 };
 
 export default function ClientSessionNotesPage() {
-  const { ready } = useRequireRole("therapist");
+  const { ready } = useRequireRole(["therapist", "admin"]);
   const params = useParams<{ id: string }>();
   const clientId = Number(params.id);
 

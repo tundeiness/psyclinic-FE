@@ -98,13 +98,20 @@ export default function AdminClientsPage() {
                   </Button>
                 </div>
               ) : (
-                <Button
-                  variant="ghost"
-                  className="!w-auto"
-                  onClick={() => setConfirmId(c.id)}
-                >
-                  Remove
-                </Button>
+                <div className="flex flex-col gap-2 sm:flex-row">
+                  <Link href={`/therapist/clients/${c.id}`}>
+                    <Button variant="ghost" className="!w-auto">
+                      View EMR
+                    </Button>
+                  </Link>
+                  <Button
+                    variant="ghost"
+                    className="!w-auto"
+                    onClick={() => setConfirmId(c.id)}
+                  >
+                    Remove
+                  </Button>
+                </div>
               )}
             </div>
           </Card>

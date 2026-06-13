@@ -19,7 +19,7 @@ import { useToast } from "@/lib/useToast";
 import { formatDateTime } from "@/lib/format";
 
 export default function SessionNotePage() {
-  const { ready } = useRequireRole("therapist");
+  const { ready } = useRequireRole(["therapist", "admin"]);
   const router = useRouter();
   const params = useParams<{ id: string }>();
   const appointmentId = Number(params.id);

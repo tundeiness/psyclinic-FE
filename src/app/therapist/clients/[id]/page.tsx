@@ -10,7 +10,7 @@ import { fetchClient, TherapistClient } from "@/lib/therapistApi";
 import { isApiError } from "@/lib/apiError";
 
 export default function ClientDetailPage() {
-  const { ready } = useRequireRole("therapist");
+  const { ready } = useRequireRole(["therapist", "admin"]);
   const { user } = useAppSelector((s) => s.auth);
   const myTpId = user?.therapist_profile?.id ?? null;
   const params = useParams<{ id: string }>();
@@ -47,6 +47,9 @@ export default function ClientDetailPage() {
     );
   }
 
+  const isAdmin = user?.role === "admin";
+  const backHref = isAdmin ? "/admin/clients" : "/therapist/clients";
+
   // Phase 14: a "former" client is one whose current_therapist_id no
   // longer matches mine. They retain in my client list because we
   // have shared appointments, but EMR access is read-only on records
@@ -60,7 +63,7 @@ export default function ClientDetailPage() {
 
   return (
     <main className="mx-auto max-w-3xl px-5 py-8">
-      <a href="/therapist/clients" className="text-base font-semibold text-brand-700 no-underline hover:text-brand-800">
+      <a href={backHref} className="text-base font-semibold text-brand-700 no-underline hover:text-brand-800">
         ← Back to clients
       </a>
 

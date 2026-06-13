@@ -1,1 +1,10 @@
-{}
+{
+  "/therapist/clients/[id]/page": "app/therapist/clients/[id]/page.js",
+  "/therapist/clients/[id]/wheel-of-life/page": "app/therapist/clients/[id]/wheel-of-life/page.js",
+  "/therapist/clients/[id]/intake/page": "app/therapist/clients/[id]/intake/page.js",
+  "/therapist/clients/[id]/wheel-of-life/[assessmentId]/page": "app/therapist/clients/[id]/wheel-of-life/[assessmentId]/page.js",
+  "/therapist/clients/[id]/service_plan_note/page": "app/therapist/clients/[id]/service_plan_note/page.js",
+  "/therapist/clients/[id]/dass/page": "app/therapist/clients/[id]/dass/page.js",
+  "/therapist/clients/[id]/session_notes/page": "app/therapist/clients/[id]/session_notes/page.js",
+  "/admin/clients/page": "app/admin/clients/page.js"
+}

@@ -17,7 +17,7 @@ import { isApiError } from "@/lib/apiError";
 // yet). The therapist sees raw subscale scores + severity bands;
 // click into a row for full item-by-item breakdown.
 export default function TherapistDassListPage() {
-  const { ready } = useRequireRole("therapist");
+  const { ready } = useRequireRole(["therapist", "admin"]);
   const params = useParams<{ id: string }>();
   const clientId = Number(params.id);
 

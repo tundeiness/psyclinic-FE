@@ -17,7 +17,7 @@ import { isApiError } from "@/lib/apiError";
 // the lowest-3 areas (the ones most likely to discuss in session),
 // and links into the detail view.
 export default function TherapistWolListPage() {
-  const { ready } = useRequireRole("therapist");
+  const { ready } = useRequireRole(["therapist", "admin"]);
   const params = useParams<{ id: string }>();
   const clientId = Number(params.id);
 

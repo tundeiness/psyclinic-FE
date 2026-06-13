@@ -23,7 +23,7 @@ import { useToast } from "@/lib/useToast";
 // Shows raw subscale scores (hidden from client by API), severity
 // bands, item-by-item responses, and a Download PDF button.
 export default function TherapistDassDetailPage() {
-  const { ready } = useRequireRole("therapist");
+  const { ready } = useRequireRole(["therapist", "admin"]);
   const toast = useToast();
   const params = useParams<{ id: string; assessmentId: string }>();
   const clientId = Number(params.id);
