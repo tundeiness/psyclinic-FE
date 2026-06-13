@@ -1,8 +1,6 @@
 {
+  "/wheel-of-life/[id]/page": "app/wheel-of-life/[id]/page.js",
+  "/wheel-of-life/page": "app/wheel-of-life/page.js",
   "/dashboard/page": "app/dashboard/page.js",
-  "/therapist/clients/[id]/dass/page": "app/therapist/clients/[id]/dass/page.js",
-  "/therapist/clients/[id]/dass/[assessmentId]/page": "app/therapist/clients/[id]/dass/[assessmentId]/page.js",
-  "/therapist/clients/page": "app/therapist/clients/page.js",
-  "/therapist/clients/[id]/page": "app/therapist/clients/[id]/page.js",
-  "/therapist/page": "app/therapist/page.js"
+  "/book/page": "app/book/page.js"
 }

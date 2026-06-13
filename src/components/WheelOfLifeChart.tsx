@@ -18,7 +18,7 @@ export function WheelOfLifeChart({
   totals: WolTotals;
   size?: number;
 }) {
-  const padding = 60; // room for labels around the wheel
+  const padding = 110; // room for the longest area labels ("Fun and Recreation", "Health and Wellbeing")
   const cx = size / 2;
   const cy = size / 2;
   const r = size / 2 - padding;
